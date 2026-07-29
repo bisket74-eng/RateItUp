@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#17345f" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <!-- Rate It Up build: 2026-07-29e | embedded Reset clearance -->
+  <title>Rate It Up</title>
+  <script>
+    // When Rate It Up is displayed inside Route Finder, make room for
+    // Route Finder's close button without changing the standalone layout.
+    if (window.self !== window.top) {
+      document.documentElement.classList.add("embedded-rate-it-up");
+    }
+  </script>
+
+  <style>
+    :root {
+      --navy: #17345f;
+      --navy-2: #244b7f;
+      --blue-soft: #eaf2fb;
+      --ink: #172033;
+      --muted: #647086;
+      --line: #d7e0ec;
+      --paper: #ffffff;
+      --bg: #f3f6fa;
+      --green: #177447;
+      --green-soft: #e6f6ed;
+      --red: #b42318;
+      --red-soft: #fff0ee;
+      --gold: #9b6500;
+      --shadow: 0 10px 28px rgba(25, 51, 91, 0.10);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #eef4fb 0%, var(--bg) 36%, #f7f8fa 100%);
+      color: var(--ink);
+      font-family: ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; touch-action: manipulation; }
+
+    .app {
+      width: min(100%, 620px);
+      margin: 0 auto;
+      padding: 0 10px calc(12px + env(safe-area-inset-bottom));
+    }
+
+    header {
+      margin: 0 -10px 10px;
+      padding: calc(11px + env(safe-area-inset-top)) 14px 12px;
+      color: white;
+      background: linear-gradient(135deg, var(--navy), var(--navy-2));
+      box-shadow: 0 8px 22px rgba(23, 52, 95, 0.22);
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.65rem, 7vw, 2.05rem);
+      letter-spacing: -0.045em;
+      line-height: 1;
+    }
+
+    .subtitle {
+      margin-top: 4px;
+      opacity: 0.84;
+      font-size: 0.78rem;
+    }
+
+    .reset {
+      border: 1px solid rgba(255,255,255,.45);
+      background: rgba(255,255,255,.12);
+      color: white;
+      border-radius: 999px;
+      min-height: 38px;
+      padding: 0 13px;
+      font-weight: 800;
+    }
+
+    /* Leave a clear gap beneath Route Finder's floating X button. */
+    html.embedded-rate-it-up .reset {
+      margin-right: 58px;
+    }
+
+    .card {
+      background: var(--paper);
+      border: 1px solid rgba(215, 224, 236, .9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .step-title {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .step-title h2 {
+      margin: 0;
+      font-size: .94rem;
+      letter-spacing: .01em;
+    }
+
+    .tiny {
+      color: var(--muted);
+      font-size: 0.76rem;
+      line-height: 1.3;
+    }
+
+    .fixed-zip {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      border: 0;
+      background: var(--blue-soft);
+      color: var(--navy);
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: .72rem;
+      font-weight: 800;
+    }
+    .fixed-zip[hidden] { display: none; }
+
+    .field {
+      width: 100%;
+      min-height: 54px;
+      border: 2px solid var(--line);
+      border-radius: 15px;
+      background: #fbfcfe;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 8px 12px;
+      transition: border-color .15s, box-shadow .15s, background .15s;
+    }
+
+    .field.active {
+      border-color: var(--navy-2);
+      box-shadow: 0 0 0 4px rgba(36,75,127,.12);
+      background: white;
+    }
+
+    .field-label {
+      color: var(--muted);
+      font-size: .78rem;
+      margin-bottom: 2px;
+    }
+
+    .field-value {
+      font-size: 1.2rem;
+      line-height: 1.1;
+      font-weight: 850;
+      letter-spacing: .02em;
+      min-height: 1.6rem;
+    }
+
+    .placeholder { color: #8b96a8; font-weight: 800; }
+    .zip-field { justify-content: center; text-align: center; }
+    .zip-field .field-value { font-size: 1.22rem; }
+    .zone-line.hidden { display: none; }
+    .tap-tag {
+      flex: none;
+      color: var(--navy);
+      background: var(--blue-soft);
+      border-radius: 999px;
+      padding: 7px 9px;
+      font-size: .72rem;
+      font-weight: 850;
+    }
+
+    .zone-line {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 38px;
+      margin-top: 7px;
+      padding: 7px 9px;
+      border-radius: 13px;
+      background: #f7f9fc;
+      border: 1px solid var(--line);
+    }
+
+    .zone-main {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #a8b1bf;
+      box-shadow: 0 0 0 4px rgba(168,177,191,.16);
+      flex: none;
+    }
+    .status-dot.good { background: var(--green); box-shadow: 0 0 0 4px rgba(23,116,71,.15); }
+    .status-dot.warn { background: var(--gold); box-shadow: 0 0 0 4px rgba(155,101,0,.15); }
+    .status-dot.bad { background: var(--red); box-shadow: 0 0 0 4px rgba(180,35,24,.15); }
+
+    .zone-text { min-width: 0; }
+    .zone-text strong { display: block; font-size: .92rem; }
+    .zone-text span { display: block; color: var(--muted); font-size: .72rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .zone-change {
+      border: 0;
+      border-radius: 10px;
+      min-height: 36px;
+      padding: 0 10px;
+      background: var(--blue-soft);
+      color: var(--navy);
+      font-weight: 850;
+      font-size: .76rem;
+    }
+
+    .types {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .type-btn {
+      min-height: 58px;
+      border: 2px solid var(--line);
+      background: #fbfcfe;
+      border-radius: 15px;
+      padding: 6px 3px;
+      color: var(--ink);
+      font-weight: 850;
+      font-size: .72rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+    }
+
+    .type-btn .icon { font-size: 1.08rem; line-height: 1; }
+    .type-btn.selected {
+      border-color: var(--navy-2);
+      color: var(--navy);
+      background: var(--blue-soft);
+      box-shadow: 0 0 0 3px rgba(36,75,127,.08);
+    }
+
+    .type-help {
+      margin: 7px 2px 0;
+      color: var(--muted);
+      font-size: .68rem;
+      line-height: 1.35;
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      background: #edf1f6;
+      border-radius: 13px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .segmented button {
+      min-height: 43px;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 850;
+    }
+
+    .segmented button.selected {
+      background: white;
+      color: var(--navy);
+      box-shadow: 0 3px 10px rgba(23,52,95,.10);
+    }
+
+    .weight-grid {
+      display: grid;
+      grid-template-columns: minmax(0, .86fr) minmax(0, 1.14fr);
+      gap: 7px;
+      align-items: stretch;
+    }
+
+    .weight-field {
+      min-width: 0;
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
+    .weight-controls {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 5px;
+      padding: 0;
+      background: transparent;
+      border-radius: 0;
+    }
+
+    .weight-controls.with-dimensions {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .weight-controls button {
+      min-width: 0;
+      min-height: 54px;
+      border: 2px solid var(--line);
+      border-radius: 13px;
+      padding: 0 3px;
+      background: #fbfcfe;
+      color: var(--muted);
+      font-size: .62rem;
+      font-weight: 850;
+      line-height: 1;
+      box-shadow: none;
+    }
+
+    .weight-controls button.selected {
+      border-color: var(--navy-2);
+      background: var(--blue-soft);
+      color: var(--navy);
+      box-shadow: 0 0 0 3px rgba(36,75,127,.08);
+    }
+
+    .weight-controls .dimension-toggle {
+      text-transform: uppercase;
+      letter-spacing: .035em;
+    }
+
+    .dimension-toggle[hidden] { display: none; }
+
+    .dimensions-panel {
+      margin-top: 7px;
+      padding: 7px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #f7f9fc;
+    }
+
+    .dimensions-panel[hidden] { display: none; }
+
+    .dimension-fields {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .dimension-field {
+      min-height: 46px;
+      border: 2px solid var(--line);
+      border-radius: 11px;
+      background: white;
+      padding: 5px 6px;
+      text-align: center;
+      color: var(--ink);
+    }
+
+    .dimension-field.active {
+      border-color: var(--navy-2);
+      box-shadow: 0 0 0 3px rgba(36,75,127,.10);
+    }
+
+    .dimension-field span {
+      display: block;
+      color: var(--muted);
+      font-size: .62rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .dimension-field strong {
+      display: block;
+      margin-top: 3px;
+      font-size: .9rem;
+      line-height: 1;
+    }
+
+    .dimensions-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: .64rem;
+      line-height: 1.2;
+    }
+
+    .clear-dimensions {
+      flex: none;
+      border: 0;
+      background: transparent;
+      color: var(--navy);
+      padding: 3px 2px;
+      font-size: .65rem;
+      font-weight: 850;
+    }
+
+
+    .result {
+      background: linear-gradient(135deg, #17345f, #244b7f);
+      color: white;
+      border: 0;
+      overflow: hidden;
+      position: relative;
+      padding: 10px 12px 9px;
+    }
+
+    .result::after {
+      content: "";
+      position: absolute;
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      right: -70px;
+      top: -90px;
+      background: rgba(255,255,255,.06);
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, .82fr) minmax(0, 1fr);
+      gap: 5px 8px;
+      align-items: start;
+      position: relative;
+      z-index: 1;
+    }
+
+    .result-item span {
+      display: block;
+      font-size: .72rem;
+      opacity: .75;
+      margin-bottom: 2px;
+    }
+
+    .result-item strong {
+      display: block;
+      font-size: 1rem;
+      line-height: 1.08;
+    }
+
+    .result-item.affixed { text-align: center; }
+    .result-item.required { text-align: right; }
+
+    .due-wrap {
+      grid-column: 1 / -1;
+      margin-top: 2px;
+      border-top: 1px solid rgba(255,255,255,.22);
+      padding-top: 8px;
+      text-align: center;
+    }
+
+    .due-label {
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .13em;
+      opacity: .78;
+      font-weight: 850;
+    }
+
+    .due {
+      margin-top: 0;
+      font-size: clamp(2rem, 10vw, 3rem);
+      line-height: .96;
+      letter-spacing: -.055em;
+      font-weight: 950;
+    }
+
+    .message {
+      grid-column: 1 / -1;
+      min-height: 0;
+      margin-top: 1px;
+      text-align: center;
+      color: rgba(255,255,255,.84);
+      font-size: .72rem;
+      line-height: 1.2;
+    }
+
+    .error-box {
+      display: none;
+      margin-top: 10px;
+      padding: 10px 11px;
+      border-radius: 12px;
+      background: var(--red-soft);
+      color: var(--red);
+      border: 1px solid #f2c6c2;
+      font-size: .78rem;
+      font-weight: 750;
+      line-height: 1.35;
+    }
+    .error-box.show { display: block; }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: .72rem;
+      line-height: 1.45;
+      padding: 2px 5px 0;
+      text-align: center;
+    }
+
+    .footer-note a { color: var(--navy); font-weight: 800; }
+
+    .keypad-backdrop, .sheet-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(9, 20, 38, .48);
+      z-index: 50;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .keypad-backdrop.show, .sheet-backdrop.show { display: flex; }
+
+    .keypad, .sheet {
+      width: min(100%, 620px);
+      background: #f6f8fb;
+      border-radius: 22px 22px 0 0;
+      padding: 12px 14px calc(14px + env(safe-area-inset-bottom));
+      box-shadow: 0 -12px 35px rgba(8,23,44,.24);
+      animation: rise .18s ease-out;
+    }
+
+    @keyframes rise { from { transform: translateY(22px); opacity: .65; } }
+
+    .keypad-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .keypad-head strong { font-size: 1rem; }
+    .keypad-readout {
+      color: var(--navy);
+      font-size: 1.35rem;
+      font-weight: 900;
+      margin-left: auto;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .done-btn {
+      border: 0;
+      border-radius: 11px;
+      min-height: 40px;
+      padding: 0 14px;
+      background: var(--navy);
+      color: white;
+      font-weight: 900;
+    }
+
+    .keys {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .key {
+      min-height: 58px;
+      border: 1px solid #d2dbe7;
+      border-radius: 14px;
+      background: white;
+      color: var(--ink);
+      font-size: 1.45rem;
+      font-weight: 850;
+      box-shadow: 0 2px 5px rgba(23,52,95,.06);
+    }
+    .key:active { transform: scale(.98); background: #edf3fb; }
+    .key.utility { background: #eaf0f7; color: var(--navy); }
+    .key.disabled { opacity: .35; pointer-events: none; }
+
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="header-row">
+        <div>
+          <h1>Rate It Up</h1>
+          <div class="subtitle">Postage due calculator</div>
+        </div>
+        <button class="reset" id="resetBtn" type="button">Reset</button>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="step-title">
+        <h2 id="zipHeading">1. Local ZIP</h2>
+        <button class="fixed-zip" id="localZipBadge" type="button" aria-label="Change local ZIP" hidden></button>
+      </div>
+      <button class="field zip-field" id="zipField" data-field="zip" type="button" aria-label="Local ZIP">
+        <span class="field-value placeholder" id="zipValue">Local ZIP</span>
+      </button>
+      <div class="zone-line hidden" id="zoneLine">
+        <div class="zone-main">
+          <span class="status-dot" id="zoneDot"></span>
+          <span class="zone-text">
+            <strong id="zoneTitle">Zone waiting</strong>
+            <span id="zoneDetail">Enter ZIP</span>
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="step-title">
+        <h2>2. Mailpiece</h2>
+      </div>
+      <div class="types" role="group" aria-label="Mailpiece type">
+        <button class="type-btn selected" data-type="letter" type="button"><span class="icon">✉️</span>Letter</button>
+        <button class="type-btn" data-type="nonmach" type="button"><span class="icon">⚠️</span><span class="type-name">Nonmach<br>Letter</span></button>
+        <button class="type-btn" data-type="flat" type="button"><span class="icon">▭</span>Flat</button>
+        <button class="type-btn" data-type="parcel" type="button"><span class="icon">📦</span>Parcel</button>
+      </div>
+      <div class="type-help" id="typeHelp">Letter-size, no more than ¼ inch thick and no more than 3.5 ounces.</div>
+    </section>
+
+    <section class="card">
+      <div class="step-title">
+        <h2>3. Weight</h2>
+        <span class="tiny">USPS rounding is automatic</span>
+      </div>
+      <div class="weight-grid">
+        <button class="field weight-field" id="weightField" data-field="weight" type="button" aria-label="Enter weight">
+          <span>
+            <span class="field-label">Weight</span>
+            <span class="field-value placeholder" id="weightValue">0</span>
+          </span>
+        </button>
+        <div class="weight-controls" id="weightControls" role="group" aria-label="Weight and parcel options">
+          <button class="selected" data-unit="oz" type="button">Ounces</button>
+          <button data-unit="lb" type="button">Pounds</button>
+          <button class="dimension-toggle" id="dimensionToggle" type="button" aria-label="Toggle parcel dimensions" aria-pressed="false" hidden>DIM</button>
+        </div>
+      </div>
+      <div class="dimensions-panel" id="dimensionsPanel" hidden>
+        <div class="dimension-fields" aria-label="Parcel dimensions in inches">
+          <button class="dimension-field" data-field="dimLength" type="button" aria-label="Enter length in inches"><span>Length</span><strong id="dimLengthValue">—</strong></button>
+          <button class="dimension-field" data-field="dimWidth" type="button" aria-label="Enter width in inches"><span>Width</span><strong id="dimWidthValue">—</strong></button>
+          <button class="dimension-field" data-field="dimHeight" type="button" aria-label="Enter height in inches"><span>Height</span><strong id="dimHeightValue">—</strong></button>
+        </div>
+        <div class="dimensions-bottom">
+          <span>Inches · USPS rounds dimensions for rating</span>
+          <button class="clear-dimensions" id="clearDimensions" type="button">Clear</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="step-title">
+        <h2>4. Postage Affixed</h2>
+      </div>
+      <button class="field" id="affixedField" data-field="affixed" type="button" aria-label="Enter postage affixed">
+        <span class="field-value placeholder" id="affixedValue">Postage Affixed</span>
+      </button>
+    </section>
+
+    <section class="card result" aria-live="polite">
+      <div class="result-grid">
+        <div class="result-item mailpiece"><span>Mailpiece</span><strong id="resultType">Letter</strong></div>
+        <div class="result-item affixed"><span>Affixed</span><strong id="resultAffixed">$0.00</strong></div>
+        <div class="result-item required"><span>Required</span><strong id="requiredPostage">$0.00</strong></div>
+        <div class="due-wrap">
+          <div class="due-label">Postage Due</div>
+          <div class="due" id="postageDue">$0.00</div>
+        </div>
+        <div class="message" id="resultMessage">Enter the weight to calculate.</div>
+      </div>
+      <div class="error-box" id="errorBox"></div>
+    </section>
+
+    <div class="footer-note">
+      Rates effective July 12, 2026. Dimensions are optional; special-content handling fees are not included.
+    </div>
+  </div>
+
+  <div class="keypad-backdrop" id="keypadBackdrop" role="dialog" aria-modal="true" aria-label="Number keypad">
+    <div class="keypad">
+      <div class="keypad-head">
+        <strong id="keypadTitle">Enter number</strong>
+        <span class="keypad-readout" id="keypadReadout">0</span>
+        <button class="done-btn" id="keypadDone" type="button">Done</button>
+      </div>
+      <div class="keys">
+        <button class="key" data-key="1" type="button">1</button>
+        <button class="key" data-key="2" type="button">2</button>
+        <button class="key" data-key="3" type="button">3</button>
+        <button class="key" data-key="4" type="button">4</button>
+        <button class="key" data-key="5" type="button">5</button>
+        <button class="key" data-key="6" type="button">6</button>
+        <button class="key" data-key="7" type="button">7</button>
+        <button class="key" data-key="8" type="button">8</button>
+        <button class="key" data-key="9" type="button">9</button>
+        <button class="key utility" data-key="." id="decimalKey" type="button">.</button>
+        <button class="key" data-key="0" type="button">0</button>
+        <button class="key utility" data-key="back" type="button" aria-label="Backspace">⌫</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    "use strict";
+
+    const LOCAL_ZIP_STORAGE_KEY = "rateItUpLocalZip";
+    const NONMACH_SURCHARGE = 0.49;
+    const DIM_DIVISOR = 139;
+    const DIM_THRESHOLD_CUBIC_INCHES = 1728;
+    const CUBE_FEE_THRESHOLD_CUBIC_INCHES = 3456;
+    const LENGTH_FEE_22_TO_30 = 4.50;
+    const LENGTH_FEE_OVER_30 = 10.00;
+    const CUBE_FEE = 21.00;
+    const OVERSIZED_RATES = [112.10,124.35,142.80,173.45,203.80,234.35,263.70,294.25,294.25];
+
+    function readSavedLocalZip() {
+      try {
+        const value = localStorage.getItem(LOCAL_ZIP_STORAGE_KEY) || "";
+        return /^\d{5}$/.test(value) ? value : "";
+      } catch (_) {
+        return "";
+      }
+    }
+
+    function saveLocalZip(value) {
+      try {
+        localStorage.setItem(LOCAL_ZIP_STORAGE_KEY, value);
+      } catch (_) {
+        // The app still works for this visit if browser storage is unavailable.
+      }
+    }
+
+    const LETTER_RATES = [[1, 0.82], [2, 1.11], [3, 1.40], [3.5, 1.69]];
+
+    const FLAT_RATES = [
+      0, 1.69, 1.98, 2.27, 2.56, 2.85, 3.14,
+      3.43, 3.72, 4.02, 4.32, 4.62, 4.93, 5.24
+    ];
+
+    // Index 0 is unused. Each row is zones 1 through 9.
+    const GROUND_ADVANTAGE = {
+      oz4:  [7.90,8.05,8.15,8.30,8.60,8.75,8.95,9.45,9.45],
+      oz8:  [7.90,8.05,8.15,8.30,8.60,8.75,8.95,9.45,9.45],
+      oz12: [9.55,9.95,10.20,10.60,10.95,11.35,11.95,12.90,12.90],
+      oz16: [9.55,9.95,10.20,10.60,10.95,11.35,11.95,12.90,12.90],
+      pounds: {
+        1:[9.55,9.95,10.20,10.60,10.95,11.35,11.95,12.90,12.90],
+        2:[10.80,11.50,12.20,13.00,14.10,15.10,16.45,19.05,19.05],
+        3:[11.30,12.00,12.65,13.70,14.95,16.45,18.95,22.40,22.40],
+        4:[12.25,12.75,13.65,14.85,16.40,18.30,20.90,24.25,24.25],
+        5:[12.95,13.55,14.55,15.80,17.45,19.60,22.40,26.05,26.05],
+        6:[13.50,13.90,14.85,16.35,18.40,21.05,24.35,28.35,28.35],
+        7:[14.00,14.40,15.40,17.10,19.45,22.55,26.25,30.60,30.60],
+        8:[14.60,14.85,15.80,17.65,20.40,24.10,28.45,33.15,33.15],
+        9:[15.10,15.40,16.25,18.30,21.40,25.55,30.75,35.70,35.70],
+        10:[15.95,16.30,17.25,19.40,22.85,27.50,33.30,39.45,39.45],
+        11:[16.75,17.30,18.15,20.40,24.20,29.45,35.95,43.30,43.30],
+        12:[17.45,17.85,18.65,21.30,25.40,31.25,38.65,46.50,46.50],
+        13:[18.20,18.50,19.15,21.75,26.40,33.10,41.70,51.00,51.00],
+        14:[18.95,19.05,19.65,22.55,27.80,35.25,44.80,54.90,54.90],
+        15:[19.65,19.75,20.40,23.20,28.95,36.75,46.65,57.35,57.35],
+        16:[20.40,20.55,21.20,24.30,30.20,38.25,48.50,59.90,59.90],
+        17:[21.15,21.40,21.90,25.40,31.45,39.95,50.80,62.85,62.85],
+        18:[21.85,22.10,22.65,25.95,32.80,41.75,53.15,65.85,65.85],
+        19:[22.30,22.55,23.60,26.40,33.80,42.80,54.10,68.00,68.00],
+        20:[22.75,22.95,24.45,27.30,35.15,44.25,55.50,69.40,69.40],
+        21:[26.25,27.50,29.75,35.05,43.35,53.50,64.95,78.50,78.50],
+        22:[28.55,30.60,33.70,40.65,49.30,60.10,71.55,84.55,84.55],
+        23:[30.10,32.40,35.85,43.70,52.85,64.10,75.85,89.05,89.05],
+        24:[31.20,33.65,37.40,45.70,55.40,67.20,79.25,92.75,92.75],
+        25:[32.40,34.95,38.90,47.80,57.90,70.10,82.55,96.35,96.35],
+        26:[33.55,36.25,40.45,49.85,60.30,73.05,85.90,100.00,100.00],
+        27:[34.65,37.55,41.95,52.05,62.90,76.15,89.15,103.65,103.65],
+        28:[35.55,38.55,43.20,53.50,64.90,78.50,91.90,106.80,106.80],
+        29:[36.45,39.55,44.30,55.15,66.90,80.80,94.60,109.85,109.85],
+        30:[37.25,40.55,45.40,56.55,68.80,83.15,97.30,112.80,112.80],
+        31:[38.25,41.45,46.50,58.00,70.70,85.45,99.85,115.80,115.80],
+        32:[39.00,42.45,47.55,59.45,72.60,87.75,102.50,118.70,118.70],
+        33:[39.85,43.35,48.65,60.90,74.45,89.90,104.90,121.55,121.55],
+        34:[40.70,44.30,49.70,62.20,76.20,92.05,107.45,124.30,124.30],
+        35:[41.60,45.20,50.70,63.65,78.10,94.30,110.05,127.15,127.15],
+        36:[42.35,46.00,51.70,64.90,79.75,96.35,112.35,129.80,129.80],
+        37:[43.20,46.85,52.70,66.30,81.55,98.45,114.75,132.60,132.60],
+        38:[43.95,47.75,53.55,67.60,83.25,100.55,117.20,135.25,135.25],
+        39:[44.75,48.60,54.60,68.90,85.05,102.60,119.50,137.80,137.80],
+        40:[45.50,49.50,55.50,70.20,86.65,104.65,121.80,140.40,140.40],
+        41:[46.35,50.35,56.50,71.50,88.45,106.70,124.10,143.00,143.00],
+        42:[47.15,51.10,57.35,72.70,90.05,108.60,126.25,145.40,145.40],
+        43:[47.80,51.95,58.25,73.85,91.75,110.55,128.50,147.90,147.90],
+        44:[48.60,52.70,59.10,75.05,93.30,112.55,130.70,150.25,150.25],
+        45:[49.30,53.45,60.00,76.30,94.95,114.30,132.85,152.60,152.60],
+        46:[50.05,54.25,60.80,77.45,96.50,116.25,134.85,154.95,154.95],
+        47:[50.70,55.10,61.65,78.55,98.00,118.00,136.95,157.20,157.20],
+        48:[51.40,55.80,62.35,79.65,99.60,119.90,139.00,159.35,159.35],
+        49:[52.10,56.45,63.25,80.75,101.10,121.55,140.95,161.60,161.60],
+        50:[52.75,57.20,64.00,81.80,102.55,123.35,142.90,163.75,163.75],
+        51:[53.45,57.90,64.70,82.85,104.00,125.10,144.85,165.75,165.75],
+        52:[54.15,58.55,65.40,83.90,105.45,126.75,146.65,167.80,167.80],
+        53:[54.80,59.20,66.05,84.95,106.80,128.35,148.50,169.80,169.80],
+        54:[55.40,59.90,66.80,85.85,108.20,130.00,150.40,171.75,171.75],
+        55:[56.00,60.50,67.50,86.90,109.55,131.55,152.05,173.65,173.65],
+        56:[56.65,61.15,68.10,87.85,110.90,133.10,153.90,175.50,175.50],
+        57:[57.25,61.80,68.75,88.60,112.25,134.70,155.45,177.35,177.35],
+        58:[57.85,62.25,69.35,89.60,113.55,136.15,157.20,179.10,179.10],
+        59:[58.45,62.95,70.00,90.40,114.80,137.65,158.80,180.75,180.75],
+        60:[58.95,63.45,70.50,91.30,116.05,139.05,160.50,182.50,182.50],
+        61:[59.50,64.05,71.05,92.10,117.30,140.50,161.95,184.10,184.10],
+        62:[60.10,64.60,71.60,92.95,118.50,141.85,163.45,185.75,185.75],
+        63:[60.70,65.10,72.10,93.80,119.55,143.20,164.90,187.20,187.20],
+        64:[61.15,65.60,72.60,94.45,120.80,144.50,166.35,188.80,188.80],
+        65:[61.65,66.15,73.10,95.20,121.95,145.80,167.70,190.20,190.20],
+        66:[62.15,66.65,73.55,95.95,123.00,147.15,169.05,191.70,191.70],
+        67:[62.65,67.05,74.00,96.60,124.10,148.35,170.40,193.00,193.00],
+        68:[63.20,67.55,74.40,97.30,125.15,149.55,171.70,194.25,194.25],
+        69:[63.60,68.00,74.85,97.90,126.20,150.65,172.90,195.55,195.55],
+        70:[64.10,68.45,75.20,98.60,127.20,151.85,174.15,196.80,196.80]
+      }
+    };
+
+    const TYPE_LABELS = {
+      letter: "Letter",
+      nonmach: "Nonmach Letter",
+      flat: "Flat",
+      parcel: "Parcel"
+    };
+
+    const TYPE_HELP = {
+      letter: "Letter-size, no more than ¼ inch thick and no more than 3.5 ounces.",
+      nonmach: "Letter-size with a nonmachinable characteristic. Maximum 3.5 ounces; the surcharge is added automatically.",
+      flat: "Large envelope that is flexible, rectangular, and uniformly thick. Maximum 13 ounces.",
+      parcel: "Ground Advantage Retail. Zone, weight, and optional dimensions determine the price."
+    };
+
+    const savedLocalZip = readSavedLocalZip();
+
+    const state = {
+      localZip: savedLocalZip,
+      zipMode: savedLocalZip ? "return" : "local",
+      zip: "",
+      zone: null,
+      zoneSource: "none",
+      type: "letter",
+      weight: "",
+      unit: "oz",
+      dimensionsOpen: false,
+      dimLength: "",
+      dimWidth: "",
+      dimHeight: "",
+      affixed: "",
+      activeField: null,
+      lookupToken: 0
+    };
+
+    const el = id => document.getElementById(id);
+    const zipValue = el("zipValue");
+    const zipHeading = el("zipHeading");
+    const zipField = el("zipField");
+    const localZipBadge = el("localZipBadge");
+    const weightValue = el("weightValue");
+    const weightControls = el("weightControls");
+    const dimensionToggle = el("dimensionToggle");
+    const dimensionsPanel = el("dimensionsPanel");
+    const dimLengthValue = el("dimLengthValue");
+    const dimWidthValue = el("dimWidthValue");
+    const dimHeightValue = el("dimHeightValue");
+    const affixedValue = el("affixedValue");
+    const zoneTitle = el("zoneTitle");
+    const zoneDetail = el("zoneDetail");
+    const zoneDot = el("zoneDot");
+    const keypadBackdrop = el("keypadBackdrop");
+    const keypadTitle = el("keypadTitle");
+    const keypadReadout = el("keypadReadout");
+    const decimalKey = el("decimalKey");
+    const errorBox = el("errorBox");
+
+    function money(value) {
+      return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(value) || 0);
+    }
+
+    function numericValue(raw) {
+      if (!raw || raw === ".") return 0;
+      const n = Number(raw);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    // Postage Affixed uses cash-register entry: 107 displays as $1.07.
+    function affixedAmount() {
+      const cents = Number(state.affixed || "0");
+      return Number.isFinite(cents) ? cents / 100 : 0;
+    }
+
+    function todayUS() {
+      const d = new Date();
+      return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
+    }
+
+    function setValueClass(node, hasValue) {
+      node.classList.toggle("placeholder", !hasValue);
+    }
+
+    function renderInputs() {
+      const enteringLocalZip = state.zipMode === "local";
+
+      zipHeading.textContent = enteringLocalZip ? "1. Local ZIP" : "1. ZIP";
+      localZipBadge.hidden = enteringLocalZip || !state.localZip;
+      localZipBadge.textContent = state.localZip ? `To ${state.localZip}` : "";
+      zipField.setAttribute("aria-label", enteringLocalZip ? "Local ZIP" : "Enter ZIP");
+
+      if (enteringLocalZip) {
+        zipValue.textContent = state.zip || "Local ZIP";
+      } else if (!state.zip) {
+        zipValue.textContent = "Enter ZIP";
+      } else if (state.zip.length < 5) {
+        zipValue.textContent = state.zip;
+      } else if (state.zone) {
+        zipValue.textContent = `${state.zip}  •  Zone ${state.zone}`;
+      } else if (state.zoneSource === "loading") {
+        zipValue.textContent = `${state.zip}  •  Finding zone…`;
+      } else {
+        zipValue.textContent = `${state.zip}  •  Zone unavailable`;
+      }
+      setValueClass(zipValue, Boolean(state.zip));
+      el("zoneLine").classList.toggle("hidden", enteringLocalZip || state.zip.length === 5);
+
+      weightValue.textContent = state.weight || "0";
+      setValueClass(weightValue, Boolean(state.weight));
+
+      affixedValue.textContent = state.affixed ? money(affixedAmount()) : "Postage Affixed";
+      setValueClass(affixedValue, Boolean(state.affixed));
+
+      document.querySelectorAll(".type-btn").forEach(btn => {
+        btn.classList.toggle("selected", btn.dataset.type === state.type);
+      });
+      el("typeHelp").textContent = TYPE_HELP[state.type];
+
+      document.querySelectorAll("[data-unit]").forEach(btn => {
+        btn.classList.toggle("selected", btn.dataset.unit === state.unit);
+      });
+
+      const parcelSelected = state.type === "parcel";
+      dimensionToggle.hidden = !parcelSelected;
+      weightControls.classList.toggle("with-dimensions", parcelSelected);
+      dimensionsPanel.hidden = !parcelSelected || !state.dimensionsOpen;
+      const dimensionsActive = parcelSelected && (state.dimensionsOpen || dimensionsComplete());
+      dimensionToggle.classList.toggle("selected", dimensionsActive);
+      dimensionToggle.setAttribute("aria-pressed", String(dimensionsActive));
+      dimLengthValue.textContent = state.dimLength || "—";
+      dimWidthValue.textContent = state.dimWidth || "—";
+      dimHeightValue.textContent = state.dimHeight || "—";
+
+      renderZone();
+      calculate();
+    }
+
+    function renderZone() {
+      zoneDot.className = "status-dot";
+      if (state.zipMode === "local") {
+        zoneTitle.textContent = "Zone waiting";
+        zoneDetail.textContent = "Enter ZIP";
+        return;
+      }
+      if (!state.zip || state.zip.length < 5) {
+        zoneTitle.textContent = "Zone waiting";
+        zoneDetail.textContent = "Enter ZIP";
+        return;
+      }
+      if (state.zone) zoneDot.classList.add("good");
+      else if (state.zoneSource === "loading") zoneDot.classList.add("warn");
+      else zoneDot.classList.add("bad");
+    }
+
+    function openKeypad(field) {
+      state.activeField = field;
+      document.querySelectorAll(".field, .dimension-field").forEach(node => node.classList.toggle("active", node.dataset.field === field));
+      const config = {
+        zip: { title: state.zipMode === "local" ? "Local ZIP" : "Enter ZIP", decimal: false },
+        weight: { title: `Weight in ${state.unit === "oz" ? "ounces" : "pounds"}`, decimal: true },
+        dimLength: { title: "Length in inches", decimal: true },
+        dimWidth: { title: "Width in inches", decimal: true },
+        dimHeight: { title: "Height in inches", decimal: true },
+        affixed: { title: "Postage affixed", decimal: false, moneyEntry: true }
+      }[field];
+      keypadTitle.textContent = config.title;
+      decimalKey.classList.toggle("disabled", !config.decimal && !config.moneyEntry);
+      decimalKey.textContent = config.moneyEntry ? "00" : ".";
+      decimalKey.dataset.key = config.moneyEntry ? "00" : ".";
+      keypadReadout.textContent = displayActiveValue();
+      keypadBackdrop.classList.add("show");
+    }
+
+    function closeKeypad() {
+      keypadBackdrop.classList.remove("show");
+      document.querySelectorAll(".field, .dimension-field").forEach(node => node.classList.remove("active"));
+      const wasZip = state.activeField === "zip";
+      const completedZip = state.zip;
+      const completedMode = state.zipMode;
+      state.activeField = null;
+
+      if (wasZip && completedZip.length === 5) {
+        if (completedMode === "local") {
+          state.localZip = completedZip;
+          saveLocalZip(completedZip);
+          state.zipMode = "return";
+          state.zip = "";
+          state.zone = null;
+          state.zoneSource = "none";
+          state.lookupToken += 1;
+          renderInputs();
+        } else {
+          lookupZone();
+        }
+      }
+    }
+
+    function displayActiveValue() {
+      const raw = state[state.activeField] || "";
+      if (state.activeField === "affixed") return money(affixedAmount());
+      return raw || "0";
+    }
+
+    function handleKey(key) {
+      const field = state.activeField;
+      if (!field) return;
+      let raw = state[field] || "";
+
+      // Postage Affixed is entered as cents, like a cash register.
+      // Example: 1 -> $0.01, 10 -> $0.10, 107 -> $1.07.
+      if (field === "affixed") {
+        if (key === "back") {
+          raw = raw.slice(0, -1);
+        } else if (key === ".") {
+          return;
+        } else {
+          const digits = key === "00" ? "00" : key;
+          if (!/^\d+$/.test(digits)) return;
+          if ((raw + digits).length > 7) return;
+          raw = (raw + digits).replace(/^0+(?=\d)/, "");
+        }
+
+        state.affixed = raw;
+        keypadReadout.textContent = displayActiveValue();
+        renderInputs();
+        return;
+      }
+
+      if (key === "back") {
+        raw = raw.slice(0, -1);
+      } else if (key === ".") {
+        if (field === "zip" || raw.includes(".")) return;
+        raw = raw ? `${raw}.` : "0.";
+      } else {
+        if (field === "zip") {
+          if (raw.length >= 5) return;
+          raw += key;
+        } else {
+          const parts = raw.split(".");
+          const isDimension = field === "dimLength" || field === "dimWidth" || field === "dimHeight";
+          const decimalLimit = field === "weight" && state.unit === "lb" ? 4 : 2;
+          if (parts[1] && parts[1].length >= decimalLimit) return;
+          const integerLimit = isDimension ? 3 : 5;
+          if (!raw.includes(".") && raw.replace(/^0+/, "").length >= integerLimit) return;
+          raw = raw === "0" ? key : raw + key;
+        }
+      }
+
+      state[field] = raw;
+      keypadReadout.textContent = displayActiveValue();
+      renderInputs();
+      if (field === "zip" && raw.length === 5) {
+        setTimeout(closeKeypad, 100);
+      }
+    }
+
+    function weightInOunces() {
+      const value = numericValue(state.weight);
+      return state.unit === "lb" ? value * 16 : value;
+    }
+
+    function rateLetter(ounces, nonmach = false) {
+      if (ounces <= 0) return { rate: 0, message: "Enter the weight to calculate." };
+      if (ounces > 3.5) {
+        return { error: nonmach ? "A nonmachinable letter cannot exceed 3.5 ounces. Choose Flat or Parcel." : "A letter over 3.5 ounces must be rated as a flat or parcel." };
+      }
+      const tier = LETTER_RATES.find(([max]) => ounces <= max);
+      const base = tier ? tier[1] : 0;
+      return {
+        rate: base + (nonmach ? NONMACH_SURCHARGE : 0),
+        message: `${tier[0]} oz${nonmach ? " + $0.49 surcharge" : ""}`
+      };
+    }
+
+    function rateFlat(ounces) {
+      if (ounces <= 0) return { rate: 0, message: "Enter the weight to calculate." };
+      if (ounces > 13) return { error: "A First-Class flat cannot exceed 13 ounces. Choose Parcel." };
+      const rounded = Math.max(1, Math.ceil(ounces - 1e-9));
+      return { rate: FLAT_RATES[rounded], message: `Rated at ${rounded} oz` };
+    }
+
+    function dimensionsComplete() {
+      return [state.dimLength, state.dimWidth, state.dimHeight].every(value => numericValue(value) > 0);
+    }
+
+    function dimensionsStarted() {
+      return [state.dimLength, state.dimWidth, state.dimHeight].some(value => String(value || "").length > 0);
+    }
+
+    function nearestWholeInch(value) {
+      return Math.floor(value + 0.5);
+    }
+
+    function parcelDimensionData() {
+      if (!dimensionsStarted()) return null;
+      if (!dimensionsComplete()) return { incomplete: true };
+
+      const raw = [state.dimLength, state.dimWidth, state.dimHeight].map(numericValue);
+      const dimRounded = raw.map(value => Math.ceil(value - 1e-9));
+      const feeRounded = raw.map(nearestWholeInch);
+      const dimensionalVolume = dimRounded.reduce((total, value) => total * value, 1);
+      const feeVolume = feeRounded.reduce((total, value) => total * value, 1);
+      const sorted = [...raw].sort((a, b) => b - a);
+      const longest = sorted[0];
+      const lengthAndGirth = longest + (2 * (sorted[1] + sorted[2]));
+
+      return {
+        raw,
+        longest,
+        lengthAndGirth,
+        dimensionalVolume,
+        feeVolume,
+        dimensionalWeight: dimensionalVolume > DIM_THRESHOLD_CUBIC_INCHES
+          ? Math.min(70, Math.ceil(dimensionalVolume / DIM_DIVISOR))
+          : 0
+      };
+    }
+
+    function parcelBaseRate(ounces, zoneIndex) {
+      if (ounces <= 4) return { rate: GROUND_ADVANTAGE.oz4[zoneIndex], tier: "4 oz" };
+      if (ounces <= 8) return { rate: GROUND_ADVANTAGE.oz8[zoneIndex], tier: "8 oz" };
+      if (ounces <= 12) return { rate: GROUND_ADVANTAGE.oz12[zoneIndex], tier: "12 oz" };
+      if (ounces < 16) return { rate: GROUND_ADVANTAGE.oz16[zoneIndex], tier: "15.999 oz" };
+      const pounds = Math.min(70, Math.ceil((ounces / 16) - 1e-9));
+      return { rate: GROUND_ADVANTAGE.pounds[pounds][zoneIndex], tier: `${pounds} lb${pounds === 1 ? "" : "s"}` };
+    }
+
+    function rateParcel(ounces) {
+      if (ounces <= 0) return { rate: 0, message: "Enter the weight to calculate." };
+      if (!state.localZip) return { error: "Enter the Local ZIP first." };
+      if (!state.zone) return { error: "A USPS zone is needed for a Ground Advantage parcel." };
+      if (ounces > 70 * 16) return { error: "Ground Advantage Retail cannot exceed 70 pounds." };
+
+      const zoneIndex = state.zone - 1;
+      const dimensions = parcelDimensionData();
+      if (dimensions && dimensions.incomplete) {
+        return { error: "Enter length, width, and height, or tap Clear to use the standard parcel rate." };
+      }
+
+      if (!dimensions) {
+        const base = parcelBaseRate(ounces, zoneIndex);
+        return { rate: base.rate, message: `Rated at the ${base.tier} tier` };
+      }
+
+      if (dimensions.lengthAndGirth > 130) {
+        return { error: "This parcel exceeds the 130-inch maximum for combined length and girth." };
+      }
+
+      if (dimensions.lengthAndGirth > 108) {
+        return {
+          rate: OVERSIZED_RATES[zoneIndex],
+          message: `Oversized · ${dimensions.lengthAndGirth.toFixed(1)} in length + girth`
+        };
+      }
+
+      const actualPounds = Math.ceil((ounces / 16) - 1e-9);
+      const dimensionalWins = dimensions.dimensionalWeight > actualPounds;
+      const billableOunces = dimensionalWins ? dimensions.dimensionalWeight * 16 : ounces;
+      const base = parcelBaseRate(billableOunces, zoneIndex);
+      let fees = 0;
+      const details = [];
+
+      if (dimensionalWins) {
+        details.push(`DIM ${dimensions.dimensionalWeight} lb`);
+      } else {
+        details.push(base.tier);
+      }
+
+      if (dimensions.longest > 30) {
+        fees += LENGTH_FEE_OVER_30;
+        details.push(`+$${LENGTH_FEE_OVER_30.toFixed(2)} length`);
+      } else if (dimensions.longest > 22) {
+        fees += LENGTH_FEE_22_TO_30;
+        details.push(`+$${LENGTH_FEE_22_TO_30.toFixed(2)} length`);
+      }
+
+      if (dimensions.feeVolume > CUBE_FEE_THRESHOLD_CUBIC_INCHES) {
+        fees += CUBE_FEE;
+        details.push(`+$${CUBE_FEE.toFixed(2)} cube`);
+      }
+
+      return {
+        rate: base.rate + fees,
+        message: details.join(" · ")
+      };
+    }
+
+    function calculate() {
+      const ounces = weightInOunces();
+      let result;
+      if (state.type === "letter") result = rateLetter(ounces, false);
+      if (state.type === "nonmach") result = rateLetter(ounces, true);
+      if (state.type === "flat") result = rateFlat(ounces);
+      if (state.type === "parcel") result = rateParcel(ounces);
+
+      const required = result && !result.error ? result.rate : 0;
+      const affixed = affixedAmount();
+      const due = Math.max(0, Math.round((required - affixed + Number.EPSILON) * 100) / 100);
+
+      el("resultType").textContent = TYPE_LABELS[state.type];
+      el("requiredPostage").textContent = money(required);
+      el("resultAffixed").textContent = money(affixed);
+      el("postageDue").textContent = money(due);
+      el("resultMessage").textContent = result && !result.error ? result.message : "Check the message below.";
+
+      if (result && result.error) {
+        errorBox.textContent = result.error;
+        errorBox.classList.add("show");
+      } else {
+        errorBox.textContent = "";
+        errorBox.classList.remove("show");
+      }
+    }
+
+    async function lookupZone() {
+      if (!/^\d{5}$/.test(state.zip) || !/^\d{5}$/.test(state.localZip)) return;
+      const token = ++state.lookupToken;
+      state.zone = null;
+      state.zoneSource = "loading";
+      renderInputs();
+
+      try {
+        const url = new URL("https://postcalc.usps.com/DomesticZoneChart/GetZone");
+        url.searchParams.set("origin", state.zip);
+        url.searchParams.set("destination", state.localZip);
+        url.searchParams.set("shippingDate", todayUS());
+        url.searchParams.set("_", String(Date.now()));
+
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 5000);
+        const response = await fetch(url.toString(), { method: "GET", signal: controller.signal, cache: "no-store" });
+        clearTimeout(timer);
+        if (!response.ok) throw new Error("USPS lookup unavailable");
+        const data = await response.json();
+        const text = String(data.ZoneInformation || "");
+        const match = text.match(/The Zone is\s+(\d+)/i);
+        if (!match) throw new Error(data.PageError || data.OriginError || "No zone returned");
+        const zone = Number(match[1]);
+        if (token !== state.lookupToken) return;
+        if (zone < 1 || zone > 9) throw new Error("Unsupported zone");
+        state.zone = zone;
+        state.zoneSource = "usps";
+        renderInputs();
+        return;
+      } catch (error) {
+        // A static GitHub page may be blocked by USPS cross-origin rules.
+      }
+
+      if (token !== state.lookupToken) return;
+      const estimate = await estimateZoneByDistance(state.zip).catch(() => null);
+      if (token !== state.lookupToken) return;
+      if (estimate) {
+        state.zone = estimate;
+        state.zoneSource = "estimate";
+      } else {
+        state.zone = null;
+        state.zoneSource = "failed";
+      }
+      renderInputs();
+    }
+
+    async function estimateZoneByDistance(zip) {
+      // Used only if the official USPS request is blocked. Zippopotam.us permits browser lookup.
+      const [originResponse, destinationResponse] = await Promise.all([
+        fetch(`https://api.zippopotam.us/us/${zip}`, { cache: "force-cache" }),
+        fetch(`https://api.zippopotam.us/us/${state.localZip}`, { cache: "force-cache" })
+      ]);
+      if (!originResponse.ok || !destinationResponse.ok) throw new Error("ZIP not found");
+      const [origin, destination] = await Promise.all([originResponse.json(), destinationResponse.json()]);
+      const a = origin.places && origin.places[0];
+      const b = destination.places && destination.places[0];
+      if (!a || !b) throw new Error("No coordinates");
+      const miles = haversineMiles(Number(a.latitude), Number(a.longitude), Number(b.latitude), Number(b.longitude));
+      if (miles <= 50) return 1;
+      if (miles <= 150) return 2;
+      if (miles <= 300) return 3;
+      if (miles <= 600) return 4;
+      if (miles <= 1000) return 5;
+      if (miles <= 1400) return 6;
+      if (miles <= 1800) return 7;
+      return 8;
+    }
+
+    function haversineMiles(lat1, lon1, lat2, lon2) {
+      const toRad = degrees => degrees * Math.PI / 180;
+      const R = 3958.7613;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const aa = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(aa), Math.sqrt(1 - aa));
+    }
+
+
+    function resetAll() {
+      Object.assign(state, {
+        zipMode: state.localZip ? "return" : "local",
+        zip: "",
+        zone: null,
+        zoneSource: "none",
+        type: "letter",
+        weight: "",
+        unit: "oz",
+        dimensionsOpen: false,
+        dimLength: "",
+        dimWidth: "",
+        dimHeight: "",
+        affixed: "",
+        activeField: null,
+        lookupToken: state.lookupToken + 1
+      });
+      renderInputs();
+    }
+
+    document.querySelectorAll(".field, .dimension-field").forEach(node => {
+      node.addEventListener("click", () => openKeypad(node.dataset.field));
+    });
+
+    document.querySelectorAll(".key").forEach(node => {
+      node.addEventListener("click", () => handleKey(node.dataset.key));
+    });
+
+    el("keypadDone").addEventListener("click", closeKeypad);
+    keypadBackdrop.addEventListener("click", event => {
+      if (event.target === keypadBackdrop) closeKeypad();
+    });
+
+    document.querySelectorAll(".type-btn").forEach(node => {
+      node.addEventListener("click", () => {
+        state.type = node.dataset.type;
+        if (state.type !== "parcel") state.dimensionsOpen = false;
+        renderInputs();
+      });
+    });
+
+    document.querySelectorAll("[data-unit]").forEach(node => {
+      node.addEventListener("click", () => {
+        if (state.unit === node.dataset.unit) return;
+        const ounces = weightInOunces();
+        state.unit = node.dataset.unit;
+        if (state.weight) {
+          const converted = state.unit === "lb" ? ounces / 16 : ounces;
+          const decimalPlaces = state.unit === "lb" ? 4 : 2;
+          const factor = 10 ** decimalPlaces;
+          state.weight = String(Math.round((converted + Number.EPSILON) * factor) / factor);
+        }
+        renderInputs();
+      });
+    });
+
+
+    dimensionToggle.addEventListener("click", () => {
+      state.dimensionsOpen = !state.dimensionsOpen;
+      renderInputs();
+    });
+
+    el("clearDimensions").addEventListener("click", () => {
+      state.dimLength = "";
+      state.dimWidth = "";
+      state.dimHeight = "";
+      state.dimensionsOpen = false;
+      renderInputs();
+    });
+
+    localZipBadge.addEventListener("click", () => {
+      state.zipMode = "local";
+      state.zip = "";
+      state.zone = null;
+      state.zoneSource = "none";
+      state.lookupToken += 1;
+      renderInputs();
+      openKeypad("zip");
+    });
+
+    el("resetBtn").addEventListener("click", resetAll);
+
+    renderInputs();
+  </script>
+</body>
+</html>
