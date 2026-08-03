@@ -7,7 +7,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <!-- Rate It Up build: 2026-08-03g | pounds default + parcel service picker -->
+  <!-- Rate It Up build: 2026-08-03h | separate label service + optional USPS flat-rate packaging -->
   <title>Rate It Up</title>
   <script>
     // When Rate It Up is displayed inside Route Finder, make room for
@@ -449,6 +449,28 @@
 
     .affixed-weight-field[hidden] { display: none; }
 
+    .label-service-row {
+      display: flex;
+      justify-content: center;
+      margin: 0 0 7px;
+    }
+
+    .label-service-row[hidden] { display: none; }
+
+    .label-service-button {
+      min-height: 34px;
+      border: 2px solid var(--line);
+      border-radius: 999px;
+      background: white;
+      color: var(--navy);
+      padding: 5px 13px;
+      font-size: .72rem;
+      font-weight: 900;
+      box-shadow: 0 2px 6px rgba(23,52,95,.06);
+    }
+
+    .label-service-button strong { color: var(--ink); }
+
     .result {
       background: linear-gradient(135deg, #17345f, #244b7f);
       color: white;
@@ -665,6 +687,78 @@
       box-shadow: 0 0 0 3px rgba(36,75,127,.08);
     }
 
+    .sheet-section-label {
+      margin: 3px 2px 6px;
+      color: var(--muted);
+      font-size: .65rem;
+      font-weight: 900;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .packaging-toggle {
+      width: 100%;
+      min-height: 48px;
+      margin-top: 10px;
+      border: 2px solid var(--navy-2);
+      border-radius: 14px;
+      background: var(--blue-soft);
+      color: var(--navy);
+      font-size: .85rem;
+      font-weight: 900;
+    }
+
+    .packaging-toggle::after { content: "▾"; margin-left: 8px; font-size: 1rem; }
+    .packaging-toggle.open::after { content: "▴"; }
+
+    .packaging-options {
+      max-height: 45vh;
+      overflow-y: auto;
+      padding: 8px 1px 2px;
+    }
+
+    .packaging-options[hidden] { display: none; }
+
+    .packaging-group-title {
+      margin: 8px 3px 5px;
+      color: var(--navy);
+      font-size: .68rem;
+      font-weight: 950;
+      text-transform: uppercase;
+    }
+
+    .packaging-option {
+      width: 100%;
+      min-height: 45px;
+      margin-bottom: 6px;
+      border: 2px solid var(--line);
+      border-radius: 12px;
+      background: white;
+      color: var(--ink);
+      padding: 7px 10px;
+      text-align: left;
+      font-size: .78rem;
+      font-weight: 900;
+    }
+
+    .packaging-option span { float: right; color: var(--navy); }
+
+    .packaging-option.selected {
+      border-color: var(--navy-2);
+      background: var(--blue-soft);
+    }
+
+    .sheet-close {
+      width: 100%;
+      min-height: 42px;
+      margin-top: 8px;
+      border: 0;
+      border-radius: 12px;
+      background: #dfe6ef;
+      color: var(--ink);
+      font-weight: 900;
+    }
+
 
   </style>
 </head>
@@ -747,6 +841,9 @@
       <div class="step-title">
         <h2>4. Affixed</h2>
       </div>
+      <div class="label-service-row" id="labelServiceRow" hidden>
+        <button class="label-service-button" id="labelServiceButton" type="button">Label: <strong id="labelServiceText">Ground Advantage</strong></button>
+      </div>
       <div class="affixed-grid" id="affixedGrid">
         <button class="field affixed-field" id="affixedField" data-field="affixed" type="button" aria-label="Enter postage affixed">
           <span>
@@ -808,13 +905,43 @@
 
   <div class="sheet-backdrop" id="serviceBackdrop" role="dialog" aria-modal="true" aria-labelledby="servicePickerTitle">
     <div class="sheet service-sheet">
-      <h3 id="servicePickerTitle">Parcel Service</h3>
-      <p>Select the service shown on the package.</p>
+      <h3 id="servicePickerTitle">Parcel Options</h3>
+      <p>Choose what the piece must be charged as.</p>
+      <div class="sheet-section-label">Standard parcel · by weight</div>
       <div class="service-options">
-        <button class="service-option selected" data-service="ground" type="button">Ground Advantage</button>
-        <button class="service-option" data-service="priority" type="button">Priority</button>
-        <button class="service-option" data-service="express" type="button">Express</button>
+        <button class="service-option selected" data-required-service="ground" type="button">Ground Advantage</button>
+        <button class="service-option" data-required-service="priority" type="button">Priority</button>
+        <button class="service-option" data-required-service="express" type="button">Express</button>
       </div>
+      <button class="packaging-toggle" id="packagingToggle" type="button">Is it in USPS flat-rate packaging?</button>
+      <div class="packaging-options" id="packagingOptions" hidden>
+        <div class="packaging-group-title">Priority Mail</div>
+        <button class="packaging-option" data-packaging="priority-envelope" type="button">Flat Rate Envelope <span>$12.90</span></button>
+        <button class="packaging-option" data-packaging="priority-legal-envelope" type="button">Legal Flat Rate Envelope <span>$13.25</span></button>
+        <button class="packaging-option" data-packaging="priority-padded-envelope" type="button">Padded Flat Rate Envelope <span>$14.00</span></button>
+        <button class="packaging-option" data-packaging="priority-small-box" type="button">Small Flat Rate Box <span>$13.65</span></button>
+        <button class="packaging-option" data-packaging="priority-medium-box" type="button">Medium Flat Rate Box <span>$24.80</span></button>
+        <button class="packaging-option" data-packaging="priority-large-box" type="button">Large Flat Rate Box <span>$34.00</span></button>
+        <button class="packaging-option" data-packaging="priority-apo-box" type="button">APO/FPO/DPO Large Flat Rate Box <span>$32.55</span></button>
+        <div class="packaging-group-title">Priority Mail Express</div>
+        <button class="packaging-option" data-packaging="express-envelope" type="button">Flat Rate Envelope <span>$35.90</span></button>
+        <button class="packaging-option" data-packaging="express-legal-envelope" type="button">Legal Flat Rate Envelope <span>$36.20</span></button>
+        <button class="packaging-option" data-packaging="express-padded-envelope" type="button">Padded Flat Rate Envelope <span>$36.90</span></button>
+      </div>
+      <button class="sheet-close" id="parcelPickerClose" type="button">Close</button>
+    </div>
+  </div>
+
+  <div class="sheet-backdrop" id="labelServiceBackdrop" role="dialog" aria-modal="true" aria-labelledby="labelServicePickerTitle">
+    <div class="sheet service-sheet">
+      <h3 id="labelServicePickerTitle">Service on the Label</h3>
+      <p>This is what the sender already paid for.</p>
+      <div class="service-options">
+        <button class="service-option selected" data-affixed-service="ground" type="button">Ground Advantage</button>
+        <button class="service-option" data-affixed-service="priority" type="button">Priority</button>
+        <button class="service-option" data-affixed-service="express" type="button">Express</button>
+      </div>
+      <button class="sheet-close" id="labelPickerClose" type="button">Close</button>
     </div>
   </div>
 
@@ -1082,6 +1209,19 @@
       70:[251.00,297.75,438.20,506.85,565.80,590.80,613.15,644.35,868.15],
     };
 
+    const FLAT_RATE_PACKAGING = {
+      "priority-envelope": { service: "priority", label: "Priority Flat Rate Envelope", rate: 12.90 },
+      "priority-legal-envelope": { service: "priority", label: "Priority Legal Flat Rate Envelope", rate: 13.25 },
+      "priority-padded-envelope": { service: "priority", label: "Priority Padded Flat Rate Envelope", rate: 14.00 },
+      "priority-small-box": { service: "priority", label: "Priority Small Flat Rate Box", rate: 13.65 },
+      "priority-medium-box": { service: "priority", label: "Priority Medium Flat Rate Box", rate: 24.80 },
+      "priority-large-box": { service: "priority", label: "Priority Large Flat Rate Box", rate: 34.00 },
+      "priority-apo-box": { service: "priority", label: "Priority APO/FPO/DPO Flat Rate Box", rate: 32.55 },
+      "express-envelope": { service: "express", label: "Express Flat Rate Envelope", rate: 35.90 },
+      "express-legal-envelope": { service: "express", label: "Express Legal Flat Rate Envelope", rate: 36.20 },
+      "express-padded-envelope": { service: "express", label: "Express Padded Flat Rate Envelope", rate: 36.90 }
+    };
+
     const PARCEL_SERVICE_LABELS = {
       ground: "Ground Advantage",
       priority: "Priority",
@@ -1130,6 +1270,8 @@
       zoneSource: "none",
       type: "letter",
       parcelService: "ground",
+      parcelPackaging: "none",
+      affixedService: "ground",
       weight: "",
       unit: "lb",
       dimensionsOpen: false,
@@ -1154,6 +1296,9 @@
     const dimLengthValue = el("dimLengthValue");
     const dimWidthValue = el("dimWidthValue");
     const dimHeightValue = el("dimHeightValue");
+    const labelServiceRow = el("labelServiceRow");
+    const labelServiceButton = el("labelServiceButton");
+    const labelServiceText = el("labelServiceText");
     const affixedValue = el("affixedValue");
     const affixedGrid = el("affixedGrid");
     const affixedWeightField = el("affixedWeightField");
@@ -1168,6 +1313,9 @@
     const decimalKey = el("decimalKey");
     const errorBox = el("errorBox");
     const serviceBackdrop = el("serviceBackdrop");
+    const labelServiceBackdrop = el("labelServiceBackdrop");
+    const packagingToggle = el("packagingToggle");
+    const packagingOptions = el("packagingOptions");
 
     function money(value) {
       return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(value) || 0);
@@ -1230,6 +1378,8 @@
       setValueClass(affixedValue, Boolean(state.affixed));
 
       const parcelSelected = state.type === "parcel";
+      labelServiceRow.hidden = !parcelSelected;
+      labelServiceText.textContent = PARCEL_SERVICE_LABELS[state.affixedService];
       affixedGrid.classList.toggle("parcel-mode", parcelSelected);
       affixedWeightField.hidden = !parcelSelected;
       affixedWeightLabel.textContent = `Weight Affixed (${state.unit === "oz" ? "oz" : "lb"})`;
@@ -1239,21 +1389,31 @@
       document.querySelectorAll(".type-btn").forEach(btn => {
         btn.classList.toggle("selected", btn.dataset.type === state.type);
       });
+      const selectedPackaging = FLAT_RATE_PACKAGING[state.parcelPackaging];
       el("typeHelp").textContent = state.type === "parcel"
-        ? PARCEL_SERVICE_HELP[state.parcelService]
+        ? (selectedPackaging
+            ? `Required: ${selectedPackaging.label}. Label service is selected separately below.`
+            : `Required: ${PARCEL_SERVICE_LABELS[state.parcelService]} by weight. USPS flat-rate packaging is optional behind Parcel.`)
         : TYPE_HELP[state.type];
 
-      document.querySelectorAll("[data-service]").forEach(btn => {
-        btn.classList.toggle("selected", btn.dataset.service === state.parcelService);
+      document.querySelectorAll("[data-required-service]").forEach(btn => {
+        btn.classList.toggle("selected", btn.dataset.requiredService === state.parcelService && state.parcelPackaging === "none");
+      });
+      document.querySelectorAll("[data-affixed-service]").forEach(btn => {
+        btn.classList.toggle("selected", btn.dataset.affixedService === state.affixedService);
+      });
+      document.querySelectorAll("[data-packaging]").forEach(btn => {
+        btn.classList.toggle("selected", btn.dataset.packaging === state.parcelPackaging);
       });
 
       document.querySelectorAll("[data-unit]").forEach(btn => {
         btn.classList.toggle("selected", btn.dataset.unit === state.unit);
       });
 
-      dimensionToggle.hidden = !parcelSelected;
-      weightControls.classList.toggle("with-dimensions", parcelSelected);
-      dimensionsPanel.hidden = !parcelSelected || !state.dimensionsOpen;
+      const standardParcel = parcelSelected && state.parcelPackaging === "none";
+      dimensionToggle.hidden = !standardParcel;
+      weightControls.classList.toggle("with-dimensions", standardParcel);
+      dimensionsPanel.hidden = !standardParcel || !state.dimensionsOpen;
       const dimensionsActive = parcelSelected && (state.dimensionsOpen || dimensionsComplete());
       dimensionToggle.classList.toggle("selected", dimensionsActive);
       dimensionToggle.setAttribute("aria-pressed", String(dimensionsActive));
@@ -1491,6 +1651,12 @@
     }
 
     function rateParcel(ounces) {
+      const flatPackaging = FLAT_RATE_PACKAGING[state.parcelPackaging];
+      if (flatPackaging) {
+        if (ounces > 70 * 16) return { error: `${flatPackaging.label} cannot exceed 70 pounds.` };
+        return { rate: flatPackaging.rate, message: `Required: ${flatPackaging.label}` };
+      }
+
       if (ounces <= 0) return { rate: 0, message: "Enter the weight to calculate." };
       if (!state.localZip) return { error: "Enter the Local ZIP first." };
       if (!state.zone) return { error: `A USPS zone is needed for ${PARCEL_SERVICE_NAMES[state.parcelService]}.` };
@@ -1558,13 +1724,13 @@
       if (ounces <= 0) return { rate: 0, message: "" };
       if (!state.localZip) return { error: "Enter the Local ZIP first." };
       if (!state.zone) return { error: "A USPS zone is needed to calculate postage from Weight Affixed." };
-      if (ounces > 70 * 16) return { error: `Weight Affixed cannot exceed 70 pounds for ${PARCEL_SERVICE_NAMES[state.parcelService]}.` };
+      if (ounces > 70 * 16) return { error: `Weight Affixed cannot exceed 70 pounds for ${PARCEL_SERVICE_NAMES[state.affixedService]}.` };
 
-      const base = parcelBaseRateForService(ounces, state.zone - 1);
+      const base = parcelBaseRateForService(ounces, state.zone - 1, state.affixedService);
       const shownWeight = `${state.affixedWeight} ${state.unit}`;
       return {
         rate: base.rate,
-        message: `Affixed calculated from ${shownWeight} label weight (${base.tier})`
+        message: `Label: ${PARCEL_SERVICE_LABELS[state.affixedService]} ${shownWeight} (${base.tier})`
       };
     }
 
@@ -1583,8 +1749,9 @@
         : (weightAffixedResult && !weightAffixedResult.error ? weightAffixedResult.rate : 0);
       const due = Math.max(0, Math.round((required - affixed + Number.EPSILON) * 100) / 100);
 
+      const selectedPackaging = FLAT_RATE_PACKAGING[state.parcelPackaging];
       el("resultType").textContent = state.type === "parcel"
-        ? PARCEL_SERVICE_LABELS[state.parcelService]
+        ? (selectedPackaging ? selectedPackaging.label : PARCEL_SERVICE_LABELS[state.parcelService])
         : TYPE_LABELS[state.type];
       el("requiredPostage").textContent = money(required);
       el("resultAffixed").textContent = money(affixed);
@@ -1691,6 +1858,8 @@
         zone: null,
         zoneSource: "none",
         type: "letter",
+        parcelPackaging: "none",
+        affixedService: "ground",
         weight: "",
         unit: "lb",
         dimensionsOpen: false,
@@ -1719,14 +1888,24 @@
     });
 
     function openServicePicker() {
-      document.querySelectorAll("[data-service]").forEach(btn => {
-        btn.classList.toggle("selected", btn.dataset.service === state.parcelService);
-      });
+      const hasPackaging = state.parcelPackaging !== "none";
+      packagingOptions.hidden = !hasPackaging;
+      packagingToggle.classList.toggle("open", hasPackaging);
+      renderInputs();
       serviceBackdrop.classList.add("show");
     }
 
     function closeServicePicker() {
       serviceBackdrop.classList.remove("show");
+    }
+
+    function openLabelServicePicker() {
+      renderInputs();
+      labelServiceBackdrop.classList.add("show");
+    }
+
+    function closeLabelServicePicker() {
+      labelServiceBackdrop.classList.remove("show");
     }
 
     document.querySelectorAll(".type-btn").forEach(node => {
@@ -1743,16 +1922,54 @@
       });
     });
 
-    document.querySelectorAll("[data-service]").forEach(node => {
+    document.querySelectorAll("[data-required-service]").forEach(node => {
       node.addEventListener("click", () => {
-        state.parcelService = node.dataset.service;
+        state.parcelService = node.dataset.requiredService;
+        state.parcelPackaging = "none";
+        state.dimensionsOpen = false;
         closeServicePicker();
         renderInputs();
       });
     });
 
+    packagingToggle.addEventListener("click", () => {
+      const willOpen = packagingOptions.hidden;
+      packagingOptions.hidden = !willOpen;
+      packagingToggle.classList.toggle("open", willOpen);
+    });
+
+    document.querySelectorAll("[data-packaging]").forEach(node => {
+      node.addEventListener("click", () => {
+        state.parcelPackaging = node.dataset.packaging;
+        state.parcelService = FLAT_RATE_PACKAGING[state.parcelPackaging].service;
+        state.dimensionsOpen = false;
+        state.dimLength = "";
+        state.dimWidth = "";
+        state.dimHeight = "";
+        closeServicePicker();
+        renderInputs();
+      });
+    });
+
+    labelServiceButton.addEventListener("click", openLabelServicePicker);
+
+    document.querySelectorAll("[data-affixed-service]").forEach(node => {
+      node.addEventListener("click", () => {
+        state.affixedService = node.dataset.affixedService;
+        closeLabelServicePicker();
+        renderInputs();
+      });
+    });
+
+    el("parcelPickerClose").addEventListener("click", closeServicePicker);
+    el("labelPickerClose").addEventListener("click", closeLabelServicePicker);
+
     serviceBackdrop.addEventListener("click", event => {
       if (event.target === serviceBackdrop) closeServicePicker();
+    });
+
+    labelServiceBackdrop.addEventListener("click", event => {
+      if (event.target === labelServiceBackdrop) closeLabelServicePicker();
     });
 
     document.querySelectorAll("[data-unit]").forEach(node => {
