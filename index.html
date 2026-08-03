@@ -7,7 +7,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <!-- Rate It Up build: 2026-08-03h | required vs label service + flat-rate packaging -->
+  <!-- Rate It Up build: 2026-08-03j | unified parcel picker + synced label default -->
   <title>Rate It Up</title>
   <script>
     // When Rate It Up is displayed inside Route Finder, make room for
@@ -626,6 +626,10 @@
 
     .service-sheet {
       padding-top: 14px;
+      max-height: min(82vh, 720px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
     .service-sheet h3 {
@@ -635,12 +639,50 @@
       font-size: 1.05rem;
     }
 
-    .service-sheet p {
+    .service-sheet > p {
       margin: 0 0 11px;
-      color: var(--muted);
+      color: #526176;
       text-align: center;
-      font-size: .72rem;
+      font-size: .76rem;
+      font-weight: 800;
+      line-height: 1.35;
     }
+
+    .service-mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+      padding: 4px;
+      margin-bottom: 10px;
+      border-radius: 14px;
+      background: #e6edf6;
+    }
+
+    .service-mode-tab {
+      min-height: 43px;
+      border: 1px solid transparent;
+      border-radius: 11px;
+      background: transparent;
+      color: #667386;
+      font-size: .84rem;
+      font-weight: 900;
+    }
+
+    .service-mode-tab.selected {
+      border-color: #cdd9e8;
+      background: white;
+      color: var(--navy);
+      box-shadow: 0 2px 7px rgba(23,52,95,.08);
+    }
+
+    .service-picker-scroll {
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 1px 2px 8px;
+    }
+
+    .service-panel[hidden] { display: none !important; }
 
     .service-options {
       display: grid;
@@ -663,6 +705,71 @@
       background: var(--blue-soft);
       color: var(--navy);
       box-shadow: 0 0 0 3px rgba(36,75,127,.08);
+    }
+
+    .flat-rate-section {
+      padding: 10px;
+      border: 1px solid #d4deeb;
+      border-radius: 15px;
+    }
+
+    .flat-rate-section + .flat-rate-section { margin-top: 10px; }
+    .flat-rate-section.priority { background: #edf5fd; }
+    .flat-rate-section.express { background: #f3f1f8; border-color: #ddd8e9; }
+
+    .flat-rate-section h4 {
+      margin: 0 2px 8px;
+      color: var(--navy);
+      font-size: .75rem;
+      font-weight: 950;
+      letter-spacing: .035em;
+      text-transform: uppercase;
+    }
+
+    .flat-rate-list {
+      display: grid;
+      gap: 7px;
+    }
+
+    .flat-rate-option {
+      min-height: 49px;
+      padding: 8px 12px;
+      border: 2px solid rgba(203,214,228,.95);
+      border-radius: 12px;
+      background: rgba(255,255,255,.94);
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      text-align: left;
+      font-size: .79rem;
+      font-weight: 900;
+      box-shadow: 0 2px 6px rgba(23,52,95,.045);
+    }
+
+    .flat-rate-option strong {
+      flex-shrink: 0;
+      color: var(--navy);
+      font-size: .82rem;
+    }
+
+    .flat-rate-option.selected {
+      border-color: var(--navy-2);
+      background: var(--blue-soft);
+      box-shadow: 0 0 0 3px rgba(36,75,127,.08);
+    }
+
+    .service-picker-done {
+      width: 100%;
+      min-height: 48px;
+      margin-top: 9px;
+      border: 0;
+      border-radius: 13px;
+      background: #dfe7f2;
+      color: var(--ink);
+      font-size: .95rem;
+      font-weight: 950;
     }
 
 
@@ -856,21 +963,36 @@
 
   <div class="sheet-backdrop" id="serviceBackdrop" role="dialog" aria-modal="true" aria-labelledby="servicePickerTitle">
     <div class="sheet service-sheet">
-      <h3 id="servicePickerTitle">What It Should Be</h3>
-      <p id="servicePickerHelp">Select the service the package must pay.</p>
-      <div class="service-options">
-        <button class="service-option selected" data-service="ground" type="button">Ground Advantage</button>
-        <button class="service-option" data-service="priority" type="button">Priority</button>
-        <button class="service-option" data-service="express" type="button">Express</button>
-      </div>
-    </div>
-  </div>
+      <h3 id="servicePickerTitle">Parcel Options</h3>
+      <p id="servicePickerHelp">Choose what the piece must be charged as.</p>
 
-  <div class="sheet-backdrop" id="packagingBackdrop" role="dialog" aria-modal="true" aria-labelledby="packagingPickerTitle">
-    <div class="sheet service-sheet">
-      <h3 id="packagingPickerTitle">Packaging</h3>
-      <p id="packagingPickerHelp">Select the packaging used.</p>
-      <div class="service-options" id="packagingOptions"></div>
+      <div class="service-mode-tabs" role="tablist" aria-label="Parcel rate type">
+        <button class="service-mode-tab selected" id="byWeightTab" type="button" role="tab" aria-selected="true">By Weight</button>
+        <button class="service-mode-tab" id="flatRateTab" type="button" role="tab" aria-selected="false">Flat Rate</button>
+      </div>
+
+      <div class="service-picker-scroll">
+        <div class="service-panel" id="byWeightPanel">
+          <div class="service-options">
+            <button class="service-option selected" data-picker-service="ground" type="button">Ground Advantage</button>
+            <button class="service-option" data-picker-service="priority" type="button">Priority</button>
+            <button class="service-option" data-picker-service="express" type="button">Express</button>
+          </div>
+        </div>
+
+        <div class="service-panel" id="flatRatePanel" hidden>
+          <section class="flat-rate-section priority">
+            <h4>Priority Mail Flat Rate</h4>
+            <div class="flat-rate-list" id="priorityFlatRateOptions"></div>
+          </section>
+          <section class="flat-rate-section express">
+            <h4>Priority Mail Express Flat Rate</h4>
+            <div class="flat-rate-list" id="expressFlatRateOptions"></div>
+          </section>
+        </div>
+      </div>
+
+      <button class="service-picker-done" id="servicePickerDone" type="button">Done</button>
     </div>
   </div>
 
@@ -1261,14 +1383,19 @@
     const serviceBackdrop = el("serviceBackdrop");
     const servicePickerTitle = el("servicePickerTitle");
     const servicePickerHelp = el("servicePickerHelp");
-    const packagingBackdrop = el("packagingBackdrop");
-    const packagingPickerTitle = el("packagingPickerTitle");
-    const packagingPickerHelp = el("packagingPickerHelp");
-    const packagingOptions = el("packagingOptions");
+    const byWeightTab = el("byWeightTab");
+    const flatRateTab = el("flatRateTab");
+    const byWeightPanel = el("byWeightPanel");
+    const flatRatePanel = el("flatRatePanel");
+    const priorityFlatRateOptions = el("priorityFlatRateOptions");
+    const expressFlatRateOptions = el("expressFlatRateOptions");
+    const servicePickerDone = el("servicePickerDone");
     const labelServiceButton = el("labelServiceButton");
     const labelServiceValue = el("labelServiceValue");
     let servicePickerMode = "required";
-    let packagingPickerMode = "required";
+    let servicePickerTab = "weight";
+    let pickerDraftService = "ground";
+    let pickerDraftPackaging = "weight";
 
     function money(value) {
       return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(value) || 0);
@@ -1348,10 +1475,6 @@
           ? PARCEL_SERVICE_HELP[state.parcelService]
           : `${servicePackagingLabel(state.parcelService, state.parcelPackaging)}. Flat-rate price applies up to 70 pounds.`)
         : TYPE_HELP[state.type];
-
-      document.querySelectorAll("[data-service]").forEach(btn => {
-        btn.classList.toggle("selected", btn.dataset.service === state.parcelService);
-      });
 
       document.querySelectorAll("[data-unit]").forEach(btn => {
         btn.classList.toggle("selected", btn.dataset.unit === state.unit);
@@ -1843,16 +1966,62 @@
       if (event.target === keypadBackdrop) closeKeypad();
     });
 
+    function flatRateEntries(service) {
+      return Object.entries(FLAT_RATE_PACKAGING[service]).filter(([key]) => key !== "weight");
+    }
+
+    function buildFlatRateOptions(service, target) {
+      target.innerHTML = "";
+      flatRateEntries(service).forEach(([key, info]) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "flat-rate-option";
+        button.dataset.flatService = service;
+        button.dataset.flatPackaging = key;
+        button.innerHTML = `<span>${info.label}</span><strong>${money(info.rate)}</strong>`;
+        target.appendChild(button);
+      });
+    }
+
+    function renderServicePicker() {
+      const byWeight = servicePickerTab === "weight";
+      byWeightTab.classList.toggle("selected", byWeight);
+      flatRateTab.classList.toggle("selected", !byWeight);
+      byWeightTab.setAttribute("aria-selected", String(byWeight));
+      flatRateTab.setAttribute("aria-selected", String(!byWeight));
+      byWeightPanel.hidden = !byWeight;
+      flatRatePanel.hidden = byWeight;
+
+      document.querySelectorAll("[data-picker-service]").forEach(button => {
+        button.classList.toggle(
+          "selected",
+          pickerDraftPackaging === "weight" && button.dataset.pickerService === pickerDraftService
+        );
+      });
+
+      document.querySelectorAll("[data-flat-service]").forEach(button => {
+        button.classList.toggle(
+          "selected",
+          button.dataset.flatService === pickerDraftService
+          && button.dataset.flatPackaging === pickerDraftPackaging
+        );
+      });
+    }
+
     function openServicePicker(mode = "required") {
       servicePickerMode = mode;
-      const selected = mode === "required" ? state.parcelService : state.affixedService;
-      servicePickerTitle.textContent = mode === "required" ? "What It Should Be" : "What Label Paid For";
+      pickerDraftService = mode === "required" ? state.parcelService : state.affixedService;
+      pickerDraftPackaging = mode === "required" ? state.parcelPackaging : state.affixedPackaging;
+      servicePickerTab = pickerDraftPackaging === "weight" ? "weight" : "flat";
+
+      servicePickerTitle.textContent = mode === "required" ? "Parcel Options" : "Label Options";
       servicePickerHelp.textContent = mode === "required"
-        ? "Select the service the package must pay."
-        : "Select the service printed on the label.";
-      document.querySelectorAll("[data-service]").forEach(btn => {
-        btn.classList.toggle("selected", btn.dataset.service === selected);
-      });
+        ? "Choose what the piece must be charged as."
+        : "Choose what service and packaging the label actually paid for.";
+
+      buildFlatRateOptions("priority", priorityFlatRateOptions);
+      buildFlatRateOptions("express", expressFlatRateOptions);
+      renderServicePicker();
       serviceBackdrop.classList.add("show");
     }
 
@@ -1860,32 +2029,72 @@
       serviceBackdrop.classList.remove("show");
     }
 
-    function openPackagingPicker(mode, service) {
-      packagingPickerMode = mode;
-      const selected = mode === "required" ? state.parcelPackaging : state.affixedPackaging;
-      packagingPickerTitle.textContent = `${PARCEL_SERVICE_LABELS[service]} Packaging`;
-      packagingPickerHelp.textContent = mode === "required"
-        ? "Select the packaging the item is actually in."
-        : "Select the packaging the label paid for.";
-      packagingOptions.innerHTML = "";
-      Object.entries(FLAT_RATE_PACKAGING[service]).forEach(([key, info]) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "service-option" + (key === selected ? " selected" : "");
-        button.dataset.packaging = key;
-        button.textContent = info.label;
-        packagingOptions.appendChild(button);
+    byWeightTab.addEventListener("click", () => {
+      servicePickerTab = "weight";
+      pickerDraftPackaging = "weight";
+      if (!["ground", "priority", "express"].includes(pickerDraftService)) pickerDraftService = "ground";
+      renderServicePicker();
+    });
+
+    flatRateTab.addEventListener("click", () => {
+      servicePickerTab = "flat";
+      if (pickerDraftService === "ground" || pickerDraftPackaging === "weight") {
+        pickerDraftService = "priority";
+        pickerDraftPackaging = "envelope";
+      }
+      renderServicePicker();
+    });
+
+    document.querySelectorAll("[data-picker-service]").forEach(node => {
+      node.addEventListener("click", () => {
+        pickerDraftService = node.dataset.pickerService;
+        pickerDraftPackaging = "weight";
+        servicePickerTab = "weight";
+        renderServicePicker();
       });
-      packagingBackdrop.classList.add("show");
+    });
+
+    function chooseFlatRate(event) {
+      const button = event.target.closest("[data-flat-service]");
+      if (!button) return;
+      pickerDraftService = button.dataset.flatService;
+      pickerDraftPackaging = button.dataset.flatPackaging;
+      servicePickerTab = "flat";
+      renderServicePicker();
     }
 
-    function closePackagingPicker() {
-      packagingBackdrop.classList.remove("show");
-    }
+    priorityFlatRateOptions.addEventListener("click", chooseFlatRate);
+    expressFlatRateOptions.addEventListener("click", chooseFlatRate);
+
+    servicePickerDone.addEventListener("click", () => {
+      if (servicePickerMode === "required") {
+        state.parcelService = pickerDraftService;
+        state.parcelPackaging = pickerDraftPackaging;
+
+        // Number 4 defaults to the complete number 2 selection.
+        state.affixedService = state.parcelService;
+        state.affixedPackaging = state.parcelPackaging;
+
+        if (state.parcelPackaging !== "weight") {
+          state.dimensionsOpen = false;
+          state.dimLength = "";
+          state.dimWidth = "";
+          state.dimHeight = "";
+          state.affixedWeight = "";
+        }
+      } else {
+        state.affixedService = pickerDraftService;
+        state.affixedPackaging = pickerDraftPackaging;
+        state.affixed = "";
+        if (state.affixedPackaging !== "weight") state.affixedWeight = "";
+      }
+
+      closeServicePicker();
+      renderInputs();
+    });
 
     document.querySelectorAll(".type-btn").forEach(node => {
       node.addEventListener("click", () => {
-        const wasParcel = state.type === "parcel";
         state.type = node.dataset.type;
         if (state.type !== "parcel") {
           state.dimensionsOpen = false;
@@ -1893,73 +2102,12 @@
           renderInputs();
           return;
         }
-        if (!wasParcel) {
-          state.affixedService = "ground";
-          state.affixedPackaging = "weight";
-        }
         renderInputs();
         openServicePicker("required");
       });
     });
 
-    document.querySelectorAll("[data-service]").forEach(node => {
-      node.addEventListener("click", () => {
-        const service = node.dataset.service;
-        if (servicePickerMode === "required") {
-          state.parcelService = service;
-          if (service === "ground") {
-            state.parcelPackaging = "weight";
-            closeServicePicker();
-            renderInputs();
-          } else {
-            closeServicePicker();
-            openPackagingPicker("required", service);
-          }
-        } else {
-          state.affixedService = service;
-          state.affixed = "";
-          if (service === "ground") {
-            state.affixedPackaging = "weight";
-            closeServicePicker();
-            renderInputs();
-          } else {
-            closeServicePicker();
-            openPackagingPicker("affixed", service);
-          }
-        }
-      });
-    });
-
-    packagingOptions.addEventListener("click", event => {
-      const button = event.target.closest("[data-packaging]");
-      if (!button) return;
-      const packaging = button.dataset.packaging;
-      if (packagingPickerMode === "required") {
-        state.parcelPackaging = packaging;
-        if (packaging !== "weight") {
-          state.dimensionsOpen = false;
-          state.dimLength = "";
-          state.dimWidth = "";
-          state.dimHeight = "";
-        }
-      } else {
-        state.affixedPackaging = packaging;
-        state.affixed = "";
-        if (packaging !== "weight") state.affixedWeight = "";
-      }
-      closePackagingPicker();
-      renderInputs();
-    });
-
     labelServiceButton.addEventListener("click", () => openServicePicker("affixed"));
-
-    serviceBackdrop.addEventListener("click", event => {
-      if (event.target === serviceBackdrop) closeServicePicker();
-    });
-
-    packagingBackdrop.addEventListener("click", event => {
-      if (event.target === packagingBackdrop) closePackagingPicker();
-    });
 
     document.querySelectorAll("[data-unit]").forEach(node => {
       node.addEventListener("click", () => {
