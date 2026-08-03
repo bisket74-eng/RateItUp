@@ -7,7 +7,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <!-- Rate It Up build: 2026-08-03f | label-weight affixed calculation -->
+  <!-- Rate It Up build: 2026-08-03g | pounds default + parcel service picker -->
   <title>Rate It Up</title>
   <script>
     // When Rate It Up is displayed inside Route Finder, make room for
@@ -624,6 +624,48 @@
     .key.disabled { opacity: .35; pointer-events: none; }
 
 
+    .service-sheet {
+      padding-top: 14px;
+    }
+
+    .service-sheet h3 {
+      margin: 0 0 4px;
+      color: var(--navy);
+      text-align: center;
+      font-size: 1.05rem;
+    }
+
+    .service-sheet p {
+      margin: 0 0 11px;
+      color: var(--muted);
+      text-align: center;
+      font-size: .72rem;
+    }
+
+    .service-options {
+      display: grid;
+      gap: 8px;
+    }
+
+    .service-option {
+      min-height: 55px;
+      border: 2px solid var(--line);
+      border-radius: 14px;
+      background: white;
+      color: var(--ink);
+      font-weight: 900;
+      font-size: .95rem;
+      box-shadow: 0 2px 7px rgba(23,52,95,.06);
+    }
+
+    .service-option.selected {
+      border-color: var(--navy-2);
+      background: var(--blue-soft);
+      color: var(--navy);
+      box-shadow: 0 0 0 3px rgba(36,75,127,.08);
+    }
+
+
   </style>
 </head>
 <body>
@@ -683,8 +725,8 @@
           </span>
         </button>
         <div class="weight-controls" id="weightControls" role="group" aria-label="Weight and parcel options">
-          <button class="selected" data-unit="oz" type="button">Ounces</button>
-          <button data-unit="lb" type="button">Pounds</button>
+          <button data-unit="oz" type="button">Ounces</button>
+          <button class="selected" data-unit="lb" type="button">Pounds</button>
           <button class="dimension-toggle" id="dimensionToggle" type="button" aria-label="Toggle parcel dimensions" aria-pressed="false" hidden>DIM</button>
         </div>
       </div>
@@ -760,6 +802,18 @@
         <button class="key utility" data-key="." id="decimalKey" type="button">.</button>
         <button class="key" data-key="0" type="button">0</button>
         <button class="key utility" data-key="back" type="button" aria-label="Backspace">⌫</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet-backdrop" id="serviceBackdrop" role="dialog" aria-modal="true" aria-labelledby="servicePickerTitle">
+    <div class="sheet service-sheet">
+      <h3 id="servicePickerTitle">Parcel Service</h3>
+      <p>Select the service shown on the package.</p>
+      <div class="service-options">
+        <button class="service-option selected" data-service="ground" type="button">Ground Advantage</button>
+        <button class="service-option" data-service="priority" type="button">Priority</button>
+        <button class="service-option" data-service="express" type="button">Express</button>
       </div>
     </div>
   </div>
@@ -882,6 +936,176 @@
       }
     };
 
+    const PRIORITY_MAIL = {
+      1:[11.00,11.50,11.65,11.90,13.05,14.50,15.60,16.95,34.25],
+      2:[11.95,12.65,13.45,14.35,16.85,18.15,19.45,21.55,42.40],
+      3:[12.45,13.30,14.00,15.15,18.05,20.95,23.85,27.10,53.45],
+      4:[13.45,14.05,15.05,16.35,20.75,25.35,28.40,31.85,62.95],
+      5:[14.30,14.95,16.05,17.50,22.10,27.00,32.70,36.90,73.00],
+      6:[14.90,15.35,16.45,18.20,23.25,29.65,37.00,41.85,82.95],
+      7:[15.55,16.05,17.10,19.05,25.10,32.30,41.15,46.75,92.65],
+      8:[16.25,16.50,17.60,19.70,26.40,35.10,45.35,51.70,102.50],
+      9:[16.85,17.15,18.10,20.85,27.45,37.70,49.45,56.45,111.95],
+      10:[17.80,18.25,19.20,21.75,28.65,40.60,53.55,61.30,121.55],
+      11:[18.70,19.30,20.30,22.90,29.95,43.65,57.85,66.25,131.35],
+      12:[19.50,20.00,20.90,23.80,31.10,46.55,62.20,71.30,141.30],
+      13:[20.35,20.75,21.50,24.40,32.50,49.40,66.65,76.55,151.75],
+      14:[21.20,21.40,22.10,25.35,34.00,52.50,71.25,81.80,162.10],
+      15:[22.00,22.20,22.95,26.25,35.65,55.05,74.80,85.95,170.35],
+      16:[22.90,23.10,23.80,27.30,37.55,57.85,78.90,90.85,180.05],
+      17:[23.75,24.05,24.60,28.50,39.65,60.95,83.00,95.65,189.60],
+      18:[24.55,24.85,25.45,29.75,42.00,64.25,87.15,100.50,199.20],
+      19:[25.05,25.40,26.50,30.30,44.10,67.35,90.65,104.65,207.50],
+      20:[25.55,25.80,27.55,31.10,46.95,70.75,94.55,109.40,216.95],
+      21:[29.50,31.00,33.50,39.40,53.05,75.50,98.00,113.70,225.25],
+      22:[32.10,34.45,37.90,45.75,60.35,80.85,101.35,117.85,233.15],
+      23:[33.85,36.50,40.40,49.20,64.75,84.60,104.50,121.95,241.20],
+      24:[35.10,37.90,42.10,51.45,67.80,87.75,107.70,126.05,249.25],
+      25:[36.45,39.35,43.80,53.85,70.85,90.85,110.85,130.10,257.25],
+      26:[37.75,40.80,45.60,56.15,73.85,94.20,114.55,134.30,265.55],
+      27:[39.00,42.35,47.25,58.60,77.00,97.00,116.85,137.45,271.65],
+      28:[40.00,43.40,48.65,60.25,79.45,99.30,119.10,140.60,277.95],
+      29:[41.00,44.55,49.90,62.05,81.85,101.65,121.45,143.50,283.55],
+      30:[41.95,45.70,51.15,63.65,84.20,103.95,123.65,146.20,288.85],
+      31:[43.00,46.75,52.40,65.35,86.50,106.20,126.00,148.90,294.15],
+      32:[43.90,47.90,53.70,67.00,88.85,108.60,128.30,151.45,299.20],
+      33:[44.85,48.85,54.85,68.65,91.15,110.85,130.45,154.05,304.30],
+      34:[45.90,49.95,56.05,70.15,93.30,113.10,132.80,156.70,309.45],
+      35:[46.80,51.05,57.20,71.75,95.60,115.30,135.05,159.25,314.40],
+      36:[47.80,51.95,58.35,73.20,97.75,117.45,137.10,161.85,319.45],
+      37:[48.70,52.95,59.50,74.80,99.90,119.55,139.10,164.40,324.45],
+      38:[49.55,53.90,60.50,76.30,102.00,121.60,141.10,166.95,329.50],
+      39:[50.50,54.90,61.60,77.70,104.20,123.95,143.60,169.45,334.40],
+      40:[51.35,55.95,62.70,79.15,106.15,126.15,146.00,172.00,339.40],
+      41:[52.20,56.85,63.75,80.60,108.30,128.35,148.35,174.45,344.25],
+      42:[53.15,57.75,64.75,81.95,110.25,130.35,150.40,176.90,349.05],
+      43:[53.90,58.70,65.75,83.30,112.30,132.45,152.55,179.35,353.75],
+      44:[54.80,59.55,66.70,84.60,114.25,134.45,154.55,181.75,358.55],
+      45:[55.60,60.35,67.70,86.00,116.20,136.40,156.55,184.15,363.25],
+      46:[56.45,61.30,68.65,87.30,118.10,138.35,158.55,186.60,368.10],
+      47:[57.20,62.20,69.55,88.55,120.00,140.35,160.60,189.00,372.80],
+      48:[57.95,63.00,70.40,89.75,121.90,142.30,162.55,191.40,377.50],
+      49:[58.75,63.75,71.35,91.05,123.65,144.15,164.55,193.75,382.10],
+      50:[59.50,64.60,72.20,92.25,125.45,146.05,166.65,196.05,386.70],
+      51:[60.25,65.40,72.95,93.35,127.20,148.05,168.80,198.40,391.30],
+      52:[61.05,66.15,73.75,94.60,129.00,150.05,170.95,200.75,396.00],
+      53:[61.70,66.80,74.50,95.75,130.65,151.95,173.25,203.30,401.00],
+      54:[62.40,67.65,75.35,96.75,132.30,153.90,175.45,205.85,406.05],
+      55:[63.15,68.30,76.15,97.90,133.95,155.90,177.70,208.40,411.00],
+      56:[63.85,69.00,76.80,99.00,135.60,157.80,179.85,210.70,415.60],
+      57:[64.55,69.75,77.55,99.85,137.25,159.75,182.10,213.00,420.05],
+      58:[65.20,70.35,78.25,100.95,138.85,161.60,184.30,215.25,424.55],
+      59:[65.85,71.05,78.95,101.85,140.35,163.30,186.15,217.45,429.00],
+      60:[66.40,71.65,79.55,102.85,141.80,164.90,187.95,219.60,433.20],
+      61:[67.05,72.35,80.20,103.75,143.30,166.65,189.80,222.20,438.30],
+      62:[67.70,72.90,80.75,104.70,144.75,168.20,191.60,224.90,443.65],
+      63:[68.35,73.55,81.30,105.60,146.10,169.80,193.30,227.60,449.05],
+      64:[68.90,74.10,81.85,106.40,147.65,171.45,195.15,230.25,454.30],
+      65:[69.45,74.70,82.45,107.20,149.00,172.95,196.90,232.95,459.70],
+      66:[70.05,75.20,82.95,108.05,150.30,174.55,198.60,235.60,464.95],
+      67:[70.60,75.70,83.45,108.80,151.60,176.05,200.40,238.20,470.10],
+      68:[71.15,76.30,83.90,109.55,152.85,177.55,202.10,240.60,475.00],
+      69:[71.65,76.75,84.40,110.25,154.10,179.00,203.75,243.10,479.90],
+      70:[72.20,77.25,84.85,111.00,155.40,180.50,205.50,245.40,484.40],
+    };
+    const PRIORITY_MAIL_EXPRESS = {
+      half:[35.65,35.90,36.00,38.55,43.65,46.75,49.80,53.35,70.35],
+      1:[35.90,36.35,38.30,43.45,51.50,55.75,59.25,62.80,83.70],
+      2:[36.25,37.55,41.40,49.10,59.85,65.10,68.95,72.45,96.65],
+      3:[36.60,38.70,44.45,54.65,68.30,74.65,78.80,82.15,109.60],
+      4:[37.20,39.85,47.55,60.25,76.70,84.00,88.50,91.80,122.65],
+      5:[37.80,41.05,50.55,65.85,85.00,93.40,98.35,101.50,135.70],
+      6:[41.60,45.20,55.55,73.05,93.35,102.00,107.60,111.10,148.55],
+      7:[45.40,49.25,60.55,80.30,101.70,110.65,116.90,120.60,161.40],
+      8:[49.20,53.40,65.50,87.55,109.95,119.25,126.20,130.20,174.25],
+      9:[53.10,57.45,70.40,94.70,118.30,127.80,135.55,139.70,187.15],
+      10:[56.85,61.55,75.40,101.95,126.65,136.40,144.85,149.25,200.00],
+      11:[59.55,65.00,81.00,107.70,132.25,141.80,150.45,155.20,208.05],
+      12:[62.30,68.45,86.60,113.40,137.85,147.15,156.05,161.15,216.05],
+      13:[65.00,72.00,92.35,119.05,143.50,152.55,161.70,167.00,224.00],
+      14:[67.75,75.40,97.95,124.85,149.10,157.85,167.30,173.00,232.00],
+      15:[70.45,78.85,103.55,130.55,154.75,163.25,172.95,178.90,240.00],
+      16:[73.20,82.30,109.20,136.30,160.45,168.60,178.65,184.80,247.95],
+      17:[76.00,85.75,114.80,142.00,166.05,174.00,184.25,190.80,256.00],
+      18:[78.75,89.25,120.45,147.70,171.65,179.35,189.85,196.70,264.00],
+      19:[81.40,92.65,126.10,153.45,177.30,184.70,195.55,202.65,272.00],
+      20:[84.20,96.10,131.75,159.20,182.85,190.05,201.15,208.55,280.00],
+      21:[87.45,100.10,138.00,165.90,190.25,197.50,208.95,216.65,290.90],
+      22:[90.65,104.05,144.35,172.55,197.70,205.00,216.65,224.65,301.70],
+      23:[93.85,108.05,150.65,179.25,205.10,212.50,224.35,232.75,312.60],
+      24:[97.10,112.15,157.00,185.85,212.55,220.00,232.15,240.80,323.55],
+      25:[100.35,116.15,163.25,192.50,219.95,227.45,239.85,248.90,334.40],
+      26:[103.55,120.10,169.60,199.20,227.40,234.90,247.60,256.90,345.30],
+      27:[106.80,124.10,175.90,205.85,234.80,242.35,255.30,265.00,356.20],
+      28:[110.00,128.10,182.25,212.60,242.15,249.80,263.10,272.95,367.05],
+      29:[113.25,132.15,188.50,219.20,249.55,257.35,270.80,281.10,377.90],
+      30:[116.50,136.10,194.90,225.90,257.00,264.80,278.55,289.10,388.80],
+      31:[119.70,140.10,201.15,232.60,264.45,272.25,286.30,297.20,399.65],
+      32:[122.95,144.05,207.45,239.25,271.85,279.75,294.05,305.20,410.50],
+      33:[126.15,148.10,213.80,245.85,279.25,287.25,301.75,313.35,421.40],
+      34:[129.45,152.05,220.10,252.60,286.70,294.75,309.60,321.35,432.25],
+      35:[132.60,156.05,226.35,259.25,294.05,302.25,317.30,329.45,443.10],
+      36:[136.10,160.20,232.45,266.00,301.90,310.50,325.90,338.30,455.15],
+      37:[139.10,163.80,238.15,272.95,309.65,318.75,334.50,347.25,466.95],
+      38:[142.25,167.85,244.25,279.90,317.35,326.60,342.65,355.85,478.65],
+      39:[145.80,171.95,250.25,286.95,325.05,334.15,350.55,364.55,490.50],
+      40:[148.95,175.65,255.90,293.90,332.90,342.40,358.85,373.55,502.40],
+      41:[152.25,179.85,262.65,302.55,342.45,352.80,369.70,384.60,516.55],
+      42:[155.00,183.40,268.65,309.60,349.95,361.10,378.10,393.25,528.45],
+      43:[158.55,187.55,274.50,316.15,357.75,369.15,386.40,402.10,540.45],
+      44:[161.45,191.25,280.55,323.30,365.45,376.90,394.70,410.95,552.00],
+      45:[164.60,195.10,286.40,330.05,372.90,385.00,403.05,419.90,564.15],
+      46:[167.80,198.85,292.15,337.40,380.85,393.05,411.15,428.60,575.90],
+      47:[171.30,203.00,298.15,344.15,388.50,401.25,419.70,437.50,587.80],
+      48:[174.15,206.70,304.35,350.95,396.00,409.30,427.95,446.35,599.70],
+      49:[177.40,210.60,309.95,358.05,403.65,417.70,436.55,455.10,611.65],
+      50:[181.10,214.85,316.05,365.10,411.50,425.45,444.55,463.95,623.40],
+      51:[184.25,218.75,322.10,371.90,419.05,433.40,452.75,471.65,633.75],
+      52:[187.45,222.45,327.55,378.75,426.55,441.85,461.20,481.95,647.30],
+      53:[190.45,226.30,333.75,385.85,434.15,449.95,469.60,490.70,659.25],
+      54:[193.85,230.40,339.75,392.60,441.50,458.20,477.95,499.40,670.95],
+      55:[197.70,235.20,347.55,399.75,449.40,466.00,486.05,508.20,682.70],
+      56:[202.65,240.75,355.00,408.85,459.45,476.75,497.40,519.95,700.80],
+      57:[206.15,244.90,360.95,415.85,467.25,484.85,505.50,528.90,712.60],
+      58:[209.65,248.95,366.65,422.85,474.75,493.05,513.90,537.75,724.50],
+      59:[212.55,252.55,372.60,429.60,482.25,501.45,522.30,546.65,736.45],
+      60:[215.40,256.30,378.70,436.80,489.95,509.50,530.55,555.50,748.55],
+      61:[218.45,260.00,384.70,444.10,498.05,517.60,538.85,564.35,760.50],
+      62:[221.95,264.05,390.55,450.95,505.20,525.60,547.15,573.45,772.60],
+      63:[225.50,268.25,396.40,457.90,512.90,534.00,555.55,582.35,784.65],
+      64:[228.65,272.05,402.25,464.80,520.35,542.20,564.00,591.25,796.75],
+      65:[232.45,276.45,408.25,471.70,527.85,550.30,571.85,600.05,808.45],
+      66:[236.85,281.25,414.35,478.85,535.65,558.45,580.25,608.90,820.10],
+      67:[239.65,284.80,420.10,486.00,543.30,566.25,588.15,617.70,832.40],
+      68:[242.75,288.60,426.05,492.90,550.60,574.70,596.90,626.95,844.65],
+      69:[246.60,292.95,432.15,499.80,558.25,582.65,604.95,635.40,856.10],
+      70:[251.00,297.75,438.20,506.85,565.80,590.80,613.15,644.35,868.15],
+    };
+
+    const PARCEL_SERVICE_LABELS = {
+      ground: "Ground Advantage",
+      priority: "Priority",
+      express: "Express"
+    };
+
+    const PARCEL_SERVICE_NAMES = {
+      ground: "Ground Advantage Retail",
+      priority: "Priority Mail Retail",
+      express: "Priority Mail Express Retail"
+    };
+
+    const PARCEL_SERVICE_HELP = {
+      ground: "Ground Advantage Retail. Zone, weight, and optional dimensions determine the price.",
+      priority: "Priority Mail Retail. Zone, weight, and optional dimensions determine the price.",
+      express: "Priority Mail Express Retail. Zone, weight, and optional dimensions determine the price."
+    };
+
+    const PARCEL_DIMENSION_FEES = {
+      ground: { over22: 4.50, over30: 10.00, overCube: 21.00, maxLengthGirth: 130 },
+      priority: { over22: 4.50, over30: 21.00, overCube: 35.00, maxLengthGirth: 108 },
+      express: { over22: 4.50, over30: 21.00, overCube: 35.00, maxLengthGirth: 108 }
+    };
+
     const TYPE_LABELS = {
       letter: "Letter",
       nonmach: "Nonmach Letter",
@@ -893,7 +1117,7 @@
       letter: "Letter-size, no more than ¼ inch thick and no more than 3.5 ounces.",
       nonmach: "Letter-size with a nonmachinable characteristic. Maximum 3.5 ounces; the surcharge is added automatically.",
       flat: "Large envelope that is flexible, rectangular, and uniformly thick. Maximum 13 ounces.",
-      parcel: "Ground Advantage Retail. Zone, weight, and optional dimensions determine the price."
+      parcel: PARCEL_SERVICE_HELP.ground
     };
 
     const savedLocalZip = readSavedLocalZip();
@@ -905,8 +1129,9 @@
       zone: null,
       zoneSource: "none",
       type: "letter",
+      parcelService: "ground",
       weight: "",
-      unit: "oz",
+      unit: "lb",
       dimensionsOpen: false,
       dimLength: "",
       dimWidth: "",
@@ -942,6 +1167,7 @@
     const keypadReadout = el("keypadReadout");
     const decimalKey = el("decimalKey");
     const errorBox = el("errorBox");
+    const serviceBackdrop = el("serviceBackdrop");
 
     function money(value) {
       return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(value) || 0);
@@ -1013,7 +1239,13 @@
       document.querySelectorAll(".type-btn").forEach(btn => {
         btn.classList.toggle("selected", btn.dataset.type === state.type);
       });
-      el("typeHelp").textContent = TYPE_HELP[state.type];
+      el("typeHelp").textContent = state.type === "parcel"
+        ? PARCEL_SERVICE_HELP[state.parcelService]
+        : TYPE_HELP[state.type];
+
+      document.querySelectorAll("[data-service]").forEach(btn => {
+        btn.classList.toggle("selected", btn.dataset.service === state.parcelService);
+      });
 
       document.querySelectorAll("[data-unit]").forEach(btn => {
         btn.classList.toggle("selected", btn.dataset.unit === state.unit);
@@ -1232,7 +1464,7 @@
       };
     }
 
-    function parcelBaseRate(ounces, zoneIndex) {
+    function groundBaseRate(ounces, zoneIndex) {
       if (ounces <= 4) return { rate: GROUND_ADVANTAGE.oz4[zoneIndex], tier: "4 oz" };
       if (ounces <= 8) return { rate: GROUND_ADVANTAGE.oz8[zoneIndex], tier: "8 oz" };
       if (ounces <= 12) return { rate: GROUND_ADVANTAGE.oz12[zoneIndex], tier: "12 oz" };
@@ -1241,11 +1473,28 @@
       return { rate: GROUND_ADVANTAGE.pounds[pounds][zoneIndex], tier: `${pounds} lb${pounds === 1 ? "" : "s"}` };
     }
 
+    function priorityBaseRate(ounces, zoneIndex) {
+      const pounds = Math.max(1, Math.min(70, Math.ceil((ounces / 16) - 1e-9)));
+      return { rate: PRIORITY_MAIL[pounds][zoneIndex], tier: `${pounds} lb${pounds === 1 ? "" : "s"}` };
+    }
+
+    function expressBaseRate(ounces, zoneIndex) {
+      if (ounces <= 8) return { rate: PRIORITY_MAIL_EXPRESS.half[zoneIndex], tier: "0.5 lb" };
+      const pounds = Math.max(1, Math.min(70, Math.ceil((ounces / 16) - 1e-9)));
+      return { rate: PRIORITY_MAIL_EXPRESS[pounds][zoneIndex], tier: `${pounds} lb${pounds === 1 ? "" : "s"}` };
+    }
+
+    function parcelBaseRateForService(ounces, zoneIndex, service = state.parcelService) {
+      if (service === "priority") return priorityBaseRate(ounces, zoneIndex);
+      if (service === "express") return expressBaseRate(ounces, zoneIndex);
+      return groundBaseRate(ounces, zoneIndex);
+    }
+
     function rateParcel(ounces) {
       if (ounces <= 0) return { rate: 0, message: "Enter the weight to calculate." };
       if (!state.localZip) return { error: "Enter the Local ZIP first." };
-      if (!state.zone) return { error: "A USPS zone is needed for a Ground Advantage parcel." };
-      if (ounces > 70 * 16) return { error: "Ground Advantage Retail cannot exceed 70 pounds." };
+      if (!state.zone) return { error: `A USPS zone is needed for ${PARCEL_SERVICE_NAMES[state.parcelService]}.` };
+      if (ounces > 70 * 16) return { error: `${PARCEL_SERVICE_NAMES[state.parcelService]} cannot exceed 70 pounds.` };
 
       const zoneIndex = state.zone - 1;
       const dimensions = parcelDimensionData();
@@ -1254,25 +1503,25 @@
       }
 
       if (!dimensions) {
-        const base = parcelBaseRate(ounces, zoneIndex);
+        const base = parcelBaseRateForService(ounces, zoneIndex);
         return { rate: base.rate, message: `Rated at the ${base.tier} tier` };
       }
 
-      if (dimensions.lengthAndGirth > 130) {
-        return { error: "This parcel exceeds the 130-inch maximum for combined length and girth." };
+      const feesForService = PARCEL_DIMENSION_FEES[state.parcelService];
+      if (dimensions.lengthAndGirth > feesForService.maxLengthGirth) {
+        return { error: `${PARCEL_SERVICE_LABELS[state.parcelService]} cannot exceed ${feesForService.maxLengthGirth} inches in combined length and girth.` };
       }
 
-      if (dimensions.lengthAndGirth > 108) {
+      if (state.parcelService === "ground" && dimensions.lengthAndGirth > 108) {
         return {
           rate: OVERSIZED_RATES[zoneIndex],
           message: `Oversized · ${dimensions.lengthAndGirth.toFixed(1)} in length + girth`
         };
       }
 
-      const actualPounds = Math.ceil((ounces / 16) - 1e-9);
-      const dimensionalWins = dimensions.dimensionalWeight > actualPounds;
+      const dimensionalWins = (dimensions.dimensionalWeight * 16) > ounces;
       const billableOunces = dimensionalWins ? dimensions.dimensionalWeight * 16 : ounces;
-      const base = parcelBaseRate(billableOunces, zoneIndex);
+      const base = parcelBaseRateForService(billableOunces, zoneIndex);
       let fees = 0;
       const details = [];
 
@@ -1283,16 +1532,16 @@
       }
 
       if (dimensions.longest > 30) {
-        fees += LENGTH_FEE_OVER_30;
-        details.push(`+$${LENGTH_FEE_OVER_30.toFixed(2)} length`);
+        fees += feesForService.over30;
+        details.push(`+$${feesForService.over30.toFixed(2)} length`);
       } else if (dimensions.longest > 22) {
-        fees += LENGTH_FEE_22_TO_30;
-        details.push(`+$${LENGTH_FEE_22_TO_30.toFixed(2)} length`);
+        fees += feesForService.over22;
+        details.push(`+$${feesForService.over22.toFixed(2)} length`);
       }
 
       if (dimensions.feeVolume > CUBE_FEE_THRESHOLD_CUBIC_INCHES) {
-        fees += CUBE_FEE;
-        details.push(`+$${CUBE_FEE.toFixed(2)} cube`);
+        fees += feesForService.overCube;
+        details.push(`+$${feesForService.overCube.toFixed(2)} cube`);
       }
 
       return {
@@ -1309,9 +1558,9 @@
       if (ounces <= 0) return { rate: 0, message: "" };
       if (!state.localZip) return { error: "Enter the Local ZIP first." };
       if (!state.zone) return { error: "A USPS zone is needed to calculate postage from Weight Affixed." };
-      if (ounces > 70 * 16) return { error: "Weight Affixed cannot exceed 70 pounds for Ground Advantage Retail." };
+      if (ounces > 70 * 16) return { error: `Weight Affixed cannot exceed 70 pounds for ${PARCEL_SERVICE_NAMES[state.parcelService]}.` };
 
-      const base = parcelBaseRate(ounces, state.zone - 1);
+      const base = parcelBaseRateForService(ounces, state.zone - 1);
       const shownWeight = `${state.affixedWeight} ${state.unit}`;
       return {
         rate: base.rate,
@@ -1334,7 +1583,9 @@
         : (weightAffixedResult && !weightAffixedResult.error ? weightAffixedResult.rate : 0);
       const due = Math.max(0, Math.round((required - affixed + Number.EPSILON) * 100) / 100);
 
-      el("resultType").textContent = TYPE_LABELS[state.type];
+      el("resultType").textContent = state.type === "parcel"
+        ? PARCEL_SERVICE_LABELS[state.parcelService]
+        : TYPE_LABELS[state.type];
       el("requiredPostage").textContent = money(required);
       el("resultAffixed").textContent = money(affixed);
       el("postageDue").textContent = money(due);
@@ -1441,7 +1692,7 @@
         zoneSource: "none",
         type: "letter",
         weight: "",
-        unit: "oz",
+        unit: "lb",
         dimensionsOpen: false,
         dimLength: "",
         dimWidth: "",
@@ -1467,15 +1718,41 @@
       if (event.target === keypadBackdrop) closeKeypad();
     });
 
+    function openServicePicker() {
+      document.querySelectorAll("[data-service]").forEach(btn => {
+        btn.classList.toggle("selected", btn.dataset.service === state.parcelService);
+      });
+      serviceBackdrop.classList.add("show");
+    }
+
+    function closeServicePicker() {
+      serviceBackdrop.classList.remove("show");
+    }
+
     document.querySelectorAll(".type-btn").forEach(node => {
       node.addEventListener("click", () => {
         state.type = node.dataset.type;
         if (state.type !== "parcel") {
           state.dimensionsOpen = false;
           state.affixedWeight = "";
+          renderInputs();
+          return;
         }
         renderInputs();
+        openServicePicker();
       });
+    });
+
+    document.querySelectorAll("[data-service]").forEach(node => {
+      node.addEventListener("click", () => {
+        state.parcelService = node.dataset.service;
+        closeServicePicker();
+        renderInputs();
+      });
+    });
+
+    serviceBackdrop.addEventListener("click", event => {
+      if (event.target === serviceBackdrop) closeServicePicker();
     });
 
     document.querySelectorAll("[data-unit]").forEach(node => {
