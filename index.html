@@ -561,6 +561,14 @@
       align-items: flex-end;
       justify-content: center;
     }
+
+    /* Keep Parcel Options anchored at the same top position when switching
+       between By Weight and Flat Rate. The bottom is allowed to follow the
+       amount of content, so the Done button stays directly below each panel. */
+    #serviceBackdrop {
+      align-items: flex-start;
+      padding-top: 18vh;
+    }
     .keypad-backdrop.show, .sheet-backdrop.show { display: flex; }
 
     .keypad, .sheet {
