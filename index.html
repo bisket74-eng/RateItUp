@@ -7,7 +7,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <!-- Rate It Up build: 2026-08-03j | unified parcel picker + synced label default -->
+  <!-- Rate It Up build: 2026-08-04a | highlighted Parcel Options Done button -->
   <title>Rate It Up</title>
   <script>
     // When Rate It Up is displayed inside Route Finder, make room for
@@ -762,14 +762,35 @@
 
     .service-picker-done {
       width: 100%;
-      min-height: 48px;
-      margin-top: 9px;
-      border: 0;
+      min-height: 52px;
+      margin-top: 10px;
+      border: 1px solid rgba(255,255,255,.28);
       border-radius: 13px;
-      background: #dfe7f2;
-      color: var(--ink);
-      font-size: .95rem;
+      background: linear-gradient(135deg, var(--navy), var(--navy-2));
+      color: #fff;
+      box-shadow:
+        0 8px 18px rgba(23,52,95,.24),
+        inset 0 1px 0 rgba(255,255,255,.16);
+      font-size: 1rem;
       font-weight: 950;
+      letter-spacing: .01em;
+      transition: transform .12s ease, box-shadow .12s ease, filter .12s ease;
+    }
+
+    .service-picker-done:hover {
+      filter: brightness(1.06);
+    }
+
+    .service-picker-done:active {
+      transform: translateY(1px) scale(.995);
+      box-shadow:
+        0 4px 10px rgba(23,52,95,.22),
+        inset 0 1px 0 rgba(255,255,255,.12);
+    }
+
+    .service-picker-done:focus-visible {
+      outline: 3px solid rgba(36,75,127,.28);
+      outline-offset: 3px;
     }
 
 
