@@ -1006,6 +1006,7 @@
             <button class="service-option selected" data-picker-service="ground" type="button">Ground Advantage</button>
             <button class="service-option" data-picker-service="priority" type="button">Priority</button>
             <button class="service-option" data-picker-service="express" type="button">Express</button>
+            <button class="service-option" data-picker-service="media" type="button">Media Mail</button>
           </div>
         </div>
 
@@ -1292,21 +1293,36 @@
     const PARCEL_SERVICE_LABELS = {
       ground: "Ground Advantage",
       priority: "Priority",
-      express: "Express"
+      express: "Express",
+      media: "Media Mail"
     };
 
     const PARCEL_SERVICE_NAMES = {
       ground: "Ground Advantage Retail",
       priority: "Priority Mail Retail",
-      express: "Priority Mail Express Retail"
+      express: "Priority Mail Express Retail",
+      media: "Media Mail Retail"
     };
 
     const PARCEL_SERVICE_HELP = {
       ground: "Ground Advantage Retail. Zone, weight, and optional dimensions determine the price.",
       priority: "Priority Mail Retail. Zone, weight, and optional dimensions determine the price.",
-      express: "Priority Mail Express Retail. Zone, weight, and optional dimensions determine the price."
+      express: "Priority Mail Express Retail. Zone, weight, and optional dimensions determine the price.",
+      media: "Media Mail Retail. Weight determines the price; Media Mail is not zone-based."
     };
 
+
+    // USPS Media Mail Retail rates, effective July 12, 2026.
+    // Media Mail is charged per pound or fraction thereof, with a 1 lb minimum.
+    const MEDIA_MAIL = {
+      1:4.39,2:5.13,3:5.86,4:6.60,5:7.34,6:8.08,7:8.81,8:9.55,9:10.29,10:11.02,
+      11:11.76,12:12.50,13:13.23,14:13.97,15:14.71,16:15.44,17:16.18,18:16.92,19:17.65,20:18.39,
+      21:19.13,22:19.86,23:20.60,24:21.34,25:22.07,26:22.81,27:23.55,28:24.29,29:25.02,30:25.76,
+      31:26.50,32:27.23,33:27.97,34:28.71,35:29.44,36:30.18,37:30.92,38:31.65,39:32.39,40:33.13,
+      41:33.86,42:34.60,43:35.34,44:36.07,45:36.81,46:37.55,47:38.28,48:39.02,49:39.76,50:40.49,
+      51:41.23,52:41.97,53:42.71,54:43.44,55:44.18,56:44.92,57:45.65,58:46.39,59:47.13,60:47.86,
+      61:48.60,62:49.34,63:50.07,64:50.81,65:51.55,66:52.28,67:53.02,68:53.76,69:54.49,70:55.23
+    };
 
     const FLAT_RATE_PACKAGING = {
       priority: {
@@ -1328,7 +1344,7 @@
     };
 
     function packagingInfo(service, packaging) {
-      if (service === "ground") return { label: "By Weight", rate: null };
+      if (service === "ground" || service === "media") return { label: "By Weight", rate: null };
       return (FLAT_RATE_PACKAGING[service] && FLAT_RATE_PACKAGING[service][packaging])
         || FLAT_RATE_PACKAGING[service].weight;
     }
@@ -1743,9 +1759,15 @@
       return { rate: PRIORITY_MAIL_EXPRESS[pounds][zoneIndex], tier: `${pounds} lb${pounds === 1 ? "" : "s"}` };
     }
 
+    function mediaBaseRate(ounces) {
+      const pounds = Math.max(1, Math.min(70, Math.ceil((ounces / 16) - 1e-9)));
+      return { rate: MEDIA_MAIL[pounds], tier: `${pounds} lb${pounds === 1 ? "" : "s"}` };
+    }
+
     function parcelBaseRateForService(ounces, zoneIndex, service = state.parcelService) {
       if (service === "priority") return priorityBaseRate(ounces, zoneIndex);
       if (service === "express") return expressBaseRate(ounces, zoneIndex);
+      if (service === "media") return mediaBaseRate(ounces);
       return groundBaseRate(ounces, zoneIndex);
     }
 
@@ -1761,9 +1783,15 @@
       }
 
       if (ounces <= 0) return { rate: 0, message: "Enter the weight to calculate." };
+      if (ounces > 70 * 16) return { error: `${PARCEL_SERVICE_NAMES[state.parcelService]} cannot exceed 70 pounds.` };
+
+      if (state.parcelService === "media") {
+        const base = mediaBaseRate(ounces);
+        return { rate: base.rate, message: `Rated at the ${base.tier} tier` };
+      }
+
       if (!state.localZip) return { error: "Enter the Local ZIP first." };
       if (!state.zone) return { error: `A USPS zone is needed for ${PARCEL_SERVICE_NAMES[state.parcelService]}.` };
-      if (ounces > 70 * 16) return { error: `${PARCEL_SERVICE_NAMES[state.parcelService]} cannot exceed 70 pounds.` };
 
       const zoneIndex = state.zone - 1;
       const dimensions = parcelDimensionData();
@@ -1833,11 +1861,13 @@
       if (!state.affixedWeight) return { rate: 0, message: "" };
       const ounces = affixedWeightInOunces();
       if (ounces <= 0) return { rate: 0, message: "" };
-      if (!state.localZip) return { error: "Enter the Local ZIP first." };
-      if (!state.zone) return { error: "A USPS zone is needed to calculate postage from Weight Affixed." };
       if (ounces > 70 * 16) return { error: `Weight Affixed cannot exceed 70 pounds for ${PARCEL_SERVICE_NAMES[state.affixedService]}.` };
+      if (state.affixedService !== "media") {
+        if (!state.localZip) return { error: "Enter the Local ZIP first." };
+        if (!state.zone) return { error: "A USPS zone is needed to calculate postage from Weight Affixed." };
+      }
 
-      const base = parcelBaseRateForService(ounces, state.zone - 1, state.affixedService);
+      const base = parcelBaseRateForService(ounces, state.zone ? state.zone - 1 : 0, state.affixedService);
       const shownWeight = `${state.affixedWeight} ${state.unit}`;
       return {
         rate: base.rate,
@@ -2061,13 +2091,13 @@
     byWeightTab.addEventListener("click", () => {
       servicePickerTab = "weight";
       pickerDraftPackaging = "weight";
-      if (!["ground", "priority", "express"].includes(pickerDraftService)) pickerDraftService = "ground";
+      if (!["ground", "priority", "express", "media"].includes(pickerDraftService)) pickerDraftService = "ground";
       renderServicePicker();
     });
 
     flatRateTab.addEventListener("click", () => {
       servicePickerTab = "flat";
-      if (pickerDraftService === "ground" || pickerDraftPackaging === "weight") {
+      if (pickerDraftService === "ground" || pickerDraftService === "media" || pickerDraftPackaging === "weight") {
         pickerDraftService = "priority";
         pickerDraftPackaging = "envelope";
       }
